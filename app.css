@@ -221,3 +221,5 @@ input[type=range]{flex:1;accent-color:var(--olive);height:28px}
   .start-s{font-size:13px}
 }
 @media (max-width:900px){.tiles.st-tiles{grid-template-columns:repeat(3,1fr)}}
+.chip span,.title{white-space:nowrap}
+@media (max-width:900px){.title em,.sub{display:none}.top-right{gap:8px}}
