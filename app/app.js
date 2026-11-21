@@ -743,7 +743,7 @@ fetch('autotest.json').then(r => r.ok ? r.json() : null).then(cfg => {
   setInterval(() => {
     const el = {};
     for (const id of ids) { const e = $(id); if (!e) continue; const r = e.getBoundingClientRect(); if (r.width && r.height && e.offsetParent !== null) el[id] = [Math.round(r.left + r.width / 2), Math.round(r.top + r.height / 2)]; }
-    L('OKO_EL', { dpr, w: innerWidth, h: innerHeight, el, ready: !!session, running, ep, ctl: $('controls').hidden, st: $('start').hidden, sy: Math.round(scrollY) });
+    L('OKO_EL', { dpr, w: innerWidth, h: innerHeight, el, ready: !!session, running, ep, ctl: $('controls').hidden, st: $('start').hidden, so: !$('stats').hidden, tg: $('tgInf').classList.contains('on'), sy: Math.round(scrollY) });
     if (running) L('OKO_RESULT', { inf: +$('cInf').textContent, veh: +$('cVeh').textContent, log: logRows.length, fps: aFps.toFixed(1), ep, diag: window.OKO_DIAG || null });
     if (!$('stats').hidden) L('OKO_STATS', { photos: document.querySelectorAll('#stGallery .ph').length });
   }, 2000);
