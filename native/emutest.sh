@@ -18,11 +18,13 @@ adb shell input tap $((W/2)) $((H/2)); sleep 2
 TC=$(last OKO_TOUCH); DPR=$(jq_ "$TC" "d['dpr']")
 OX=$(python3 -c "print(int($W/2 - $(jq_ "$TC" "d['x']")*$DPR))"); OY=$(python3 -c "print(int($H/2 - $(jq_ "$TC" "d['y']")*$DPR))")
 echo "::notice::Екран ${W}x${H}, dpr=$DPR, зсув WebView $OX,$OY"
-tap() { local E X Y; E=$(last OKO_EL); X=$(jq_ "$E" "d['el']['$1'][0]"); Y=$(jq_ "$E" "d['el']['$1'][1]");
-  [ -z "$X" ] && { echo "::error::Кнопку $1 не видно на екрані"; return 1; }
+tap() { local E X Y i; for i in 1 2 3 4 5 6; do E=$(last OKO_EL); X=$(jq_ "$E" "d['el']['$1'][0]"); Y=$(jq_ "$E" "d['el']['$1'][1]"); [ -n "$X" ] && break; sleep 3; done
+  [ -z "$X" ] && { echo "::error::Кнопку $1 не видно на екрані: $(echo "$E" | cut -c1-300)"; return 1; }
   adb shell input tap $(python3 -c "print(int($X*$DPR+$OX), int($Y*$DPR+$OY))"); echo "::notice::Натиснуто $1"; }
-tap btnDemoInf; sleep 40
-R=$(last OKO_RESULT); echo "::notice::Аналіз: $R"
+tap btnDemoInf
+# емулятор без відеокарти рахує повільно — чекаємо перших виявлень до 4 хв
+for i in $(seq 1 48); do sleep 5; R=$(last OKO_RESULT); [ -n "$R" ] && [ "$(jq_ "$R" "d['log']>0")" = "True" ] && break; done
+sleep 6; R=$(last OKO_RESULT); echo "::notice::Аналіз: $R"
 tap btnStop; sleep 3
 tap btnStats; sleep 4
 S=$(last OKO_STATS); echo "::notice::Статистика: $S"

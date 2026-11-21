@@ -1,0 +1,15 @@
+<!DOCTYPE html><html><head><meta charset="utf-8">
+<style>
+html,body{margin:0;background:transparent;overflow:hidden;user-select:none;font:700 11px -apple-system,"Segoe UI",Arial,sans-serif}
+.aim{position:absolute;left:6px;top:6px;width:64px;height:64px;border-radius:50%;-webkit-app-region:drag;cursor:grab;
+  background:radial-gradient(circle,rgba(255,60,50,.25) 0,rgba(255,60,50,.08) 55%,transparent 70%);animation:p 1.6s ease-in-out infinite}
+.aim svg{width:64px;height:64px;filter:drop-shadow(0 0 6px rgba(255,60,50,.9))}
+.tip{position:absolute;left:0;right:0;top:76px;text-align:center;color:#fff;text-shadow:0 1px 3px #000,0 0 6px #000;letter-spacing:.02em}
+@keyframes p{50%{transform:scale(1.08)}}
+</style></head><body>
+<div class="aim" id="aim"><svg viewBox="0 0 64 64" fill="none" stroke="#ff3b30" stroke-width="3" stroke-linecap="round">
+<circle cx="32" cy="32" r="22"/><circle cx="32" cy="32" r="3" fill="#ff3b30"/><path d="M32 2v14M32 48v14M2 32h14M48 32h14"/></svg></div>
+<div class="tip" id="tip">Тягніть на відео</div>
+<script>
+const q=new URLSearchParams(location.search); if(q.get('lang')==='en') document.getElementById('tip').textContent='Drag onto video';
+</script></body></html>

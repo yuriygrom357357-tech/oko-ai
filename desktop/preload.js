@@ -1,0 +1,30 @@
+// Міст між вікнами ОКО-ШІ та системою (екран, прицілі, збереження файлів).
+const { contextBridge, ipcRenderer } = require('electron');
+contextBridge.exposeInMainWorld('okoDesktop', {
+  isDesktop: true,
+  platform: process.platform,
+  addAim: () => ipcRenderer.invoke('add-aim'),
+  cursor: () => ipcRenderer.invoke('cursor'),
+  targets: () => ipcRenderer.invoke('targets'),
+  onTargets: cb => ipcRenderer.on('targets', (e, l) => cb(l)),
+  onFocusTarget: cb => ipcRenderer.on('focus-target', (e, id) => cb(id)),
+  sources: () => ipcRenderer.invoke('sources'),
+  screenAccess: () => ipcRenderer.invoke('screen-access'),
+  openScreenSettings: () => ipcRenderer.invoke('open-screen-settings'),
+  removeTarget: id => ipcRenderer.invoke('remove-target', id),
+  status: (id, st) => ipcRenderer.send('status', id, st),
+  setLang: l => ipcRenderer.send('lang', l),
+  save: (name, buf) => ipcRenderer.invoke('save', name, buf),
+  reveal: p => ipcRenderer.invoke('reveal', p),
+  // вікна прицілу/рамки
+  frameMouse: solid => ipcRenderer.send('frame-mouse', solid),
+  frameResize: (dw, dh, start) => ipcRenderer.send('frame-resize', dw, dh, start),
+  frameResizeEnd: () => ipcRenderer.send('frame-resize-end'),
+  frameClose: () => ipcRenderer.send('frame-close'),
+  frameFocus: id => ipcRenderer.send('frame-focus', id),
+  onStatus: cb => ipcRenderer.on('status', (e, s) => cb(s)),
+  onLang: cb => ipcRenderer.on('lang', (e, l) => cb(l)),
+  // автотест
+  testCreateTarget: r => ipcRenderer.invoke('test-create-target', r),
+  testWindows: () => ipcRenderer.invoke('test-windows'),
+});

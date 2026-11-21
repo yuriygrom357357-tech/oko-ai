@@ -1,0 +1,77 @@
+{
+  "name": "oko-ai",
+  "version": "0.1.0",
+  "description": "ОКО-ШІ — аналіз відео з БпЛА",
+  "main": "main.js",
+  "scripts": {
+    "web": "node -e \"const fs=require('fs');fs.rmSync('web',{recursive:true,force:true});fs.cpSync('../app','web',{recursive:true});fs.rmSync('web/sw.js',{force:true})\"",
+    "start": "npm run web && electron .",
+    "dist:mac": "npm run web && electron-builder --mac --arm64 --publish never",
+    "dist:win": "npm run web && electron-builder --win --x64 --publish never"
+  },
+  "keywords": [],
+  "author": "Юрій Мельничук (позивний «Композитор»)",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^45.4.1",
+    "electron-builder": "^26.18.0"
+  },
+  "productName": "OKO-AI",
+  "build": {
+    "appId": "ua.okoai.desktop",
+    "productName": "OKO-AI",
+    "copyright": "Юрій Мельничук, позивний «Композитор»",
+    "files": [
+      "main.js",
+      "preload.js",
+      "aim.html",
+      "frame.html",
+      "icons/**",
+      "web/**"
+    ],
+    "asarUnpack": [
+      "web/models/**",
+      "web/vendor/**"
+    ],
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64"
+          ]
+        }
+      ],
+      "icon": "icons/icon.png",
+      "category": "public.app-category.utilities",
+      "identity": "-",
+      "artifactName": "OKO-AI-Mac.${ext}",
+      "extendInfo": {
+        "NSCameraUsageDescription": "ОКО-ШІ аналізує відео з камери або HDMI-грабера.",
+        "NSScreenCaptureUsageDescription": "ОКО-ШІ аналізує відео з екрана пульта в межах прицілу."
+      }
+    },
+    "dmg": {
+      "title": "ОКО-ШІ"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "icons/icon-256.png",
+      "artifactName": "OKO-AI-Windows.${ext}"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "shortcutName": "ОКО-ШІ",
+      "createDesktopShortcut": true,
+      "runAfterFinish": true
+    }
+  }
+}

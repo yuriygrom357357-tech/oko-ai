@@ -1,0 +1,49 @@
+name: Windows і Mac
+on:
+  push:
+    branches: [main]
+    paths: ['app/**', 'desktop/**', '.github/workflows/desktop.yml']
+  workflow_dispatch: {}
+permissions:
+  contents: write
+concurrency:
+  group: desktop
+  cancel-in-progress: true
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            cmd: dist:mac
+            file: OKO-AI-Mac.dmg
+          - os: windows-latest
+            cmd: dist:win
+            file: OKO-AI-Windows.exe
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with: { node-version: 22 }
+      - name: Зібрати
+        working-directory: desktop
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+        run: |
+          npm install
+          npm run ${{ matrix.cmd }}
+      - name: Перевірити файл
+        shell: bash
+        run: ls -la desktop/dist/ && test -f "desktop/dist/${{ matrix.file }}"
+      - name: Опублікувати
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: desktop-latest
+          name: ОКО-ШІ — Windows і Mac (остання збірка)
+          body: |
+            **Windows:** запустіть `OKO-AI-Windows.exe`. Якщо з'явиться «Windows захистив ваш ПК» → «Докладніше» → «Усе одно запустити».
+            **Mac (Apple Silicon):** відкрийте `OKO-AI-Mac.dmg`, перетягніть OKO-AI у «Програми». Перший запуск: правий клік → «Відкрити» (або Системні параметри → Конфіденційність і безпека → «Усе одно відкрити»). Для прицілу дозвольте «Запис екрана».
+            Розробник: Юрій Мельничук, позивний «Композитор».
+          files: desktop/dist/${{ matrix.file }}
+          make_latest: false

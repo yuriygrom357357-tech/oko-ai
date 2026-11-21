@@ -273,12 +273,12 @@ function renderLogEmpty() { $('log').innerHTML = `<li class="empty">${t('logEmpt
 
 // ------------------------------------------------------------ малювання
 function roundRect(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
-function drawOverlay() {
+function drawOverlay(src = tracks) {
   const W = canvas.width, k2 = W / Math.max(1, canvas.clientWidth || W); // пікселів кадру на 1 CSS-піксель
   const fs = Math.round(Math.max(W / 75, 12 * k2)), lw = Math.max(2, Math.round(Math.max(W / 450, 2 * k2)));
   ctx.font = `700 ${fs}px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif`;
   ctx.textBaseline = 'middle';
-  const vis = tracks.filter(k => confirmed(k) && S.show[k.cls]);
+  const vis = src.filter(k => confirmed(k) && S.show[k.cls]);
   const live = vis.filter(k => k.miss === 0);
   const list = vis.filter(k => k.miss === 0 || !live.some(v => v.cls === k.cls && (iou(v.box, k.box) > 0.05 || cdist(v.box, k.box) < 60)));
   list.sort((a, b) => (a.cls === 'INF' ? 1 : 0) - (b.cls === 'INF' ? 1 : 0)); // піхота малюється поверх
@@ -327,7 +327,7 @@ let srcLabel = '';
 let running = false, paused = false, srcKind = null, stream = null, aFps = 0, aBusy = false, lastA = 0;
 const SRC_W_MAX = 1920;
 function frameSize() { return [video.videoWidth, video.videoHeight]; }
-function show(el, on) { $(el).hidden = !on; }
+function show(el, on) { const e = $(el); if (e) e.hidden = !on; }
 function toast(msg) { const el = $('toast'); el.textContent = msg; el.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => el.hidden = true, 2200); }
 
 async function startSource(kind, payload, label) {
@@ -366,6 +366,7 @@ function stopSource(silent) {
   running = false; paused = false;
   if (recorder && recorder.state !== 'inactive') recorder.stop();
   if (stream) { stream.getTracks().forEach(x => x.stop()); stream = null; }
+  if (typeof DT !== 'undefined') { DT.streams.forEach(v => v.stream.getTracks().forEach(x => x.stop())); DT.streams.clear(); show('tbar', false); }
   try { video.pause(); } catch (e) {}
   if (video.src && video.src.startsWith('blob:')) URL.revokeObjectURL(video.src);
   video.removeAttribute('src'); video.srcObject = null;
@@ -380,6 +381,7 @@ video.addEventListener('ended', () => { if (running) { paused = true; updPause()
 
 function render() {
   if (!running) return;
+  if (srcKind === 'targets') { renderTargets(); requestAnimationFrame(render); return; }
   if (!paused || srcKind === 'file' || srcKind === 'demo') {
     if (video.readyState >= 2) ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
   }
@@ -415,7 +417,8 @@ async function analyse() {
 }
 function updCounts() {
   const n = { INF: 0, VEH: 0, AIR: 0, MOV: 0 };
-  for (const k of tracks) if (confirmed(k) && k.miss === 0 && S.show[k.cls]) n[k.cls]++;
+  const all = srcKind === 'targets' ? DT.list.flatMap(x => x.tracks) : tracks;
+  for (const k of all) if (confirmed(k) && k.miss === 0 && S.show[k.cls]) n[k.cls]++;
   $('cInf').textContent = n.INF; $('cVeh').textContent = n.VEH; $('cAir').textContent = n.AIR; $('cMov').textContent = n.MOV;
   $('stage').classList.toggle('alert', running && (n.INF > 0 || n.AIR > 0));
   $('tInf').classList.toggle('alert', n.INF > 0); $('tAir').classList.toggle('alert', n.AIR > 0); $('tVeh').classList.toggle('alert', n.VEH > 0);
@@ -439,7 +442,7 @@ function download(blob, name) {
     rd.readAsDataURL(blob);
     return;
   }
-  if (window.okoDesktop && window.okoDesktop.save) { blob.arrayBuffer().then(b => window.okoDesktop.save(name, b)); return; }
+  if (window.okoDesktop && window.okoDesktop.save) { blob.arrayBuffer().then(b => window.okoDesktop.save(name, b)).then(p => toast((S.lang === 'en' ? 'Saved: ' : 'Збережено: ') + String(p).split(/[\\/]/).slice(-3).join('/'))); return; }
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
   document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
 }
@@ -480,6 +483,7 @@ function applyLang() {
   if (session) setStatus('ok', `${running ? t('stRun') : t('stReady')} · ${ep}`);
   if (!logRows.length) renderLogEmpty();
   if (window.OKO_STATS) OKO_STATS.applyLang();
+  if (window.okoDesktop) { okoDesktop.setLang(S.lang); if (typeof dtLang === 'function') dtLang(); }
   if (typeof renderHelp === 'function' && $('help') && !$('help').hidden) renderHelp();
 }
 function applyToggles() {
@@ -556,6 +560,155 @@ $('help').onclick = e => { if (e.target.id === 'help') closeHelp(); };
 // перший запуск — показати довідку, доки людина її не закриє
 try { if (!localStorage.getItem('oko.helpSeen')) setTimeout(() => { if (!running && !localStorage.getItem('oko.helpSeen')) { renderHelp(); $('help').hidden = false; } }, 700); } catch (e) {}
 
+// ------------------------------------------------------------ НАСТІЛЬНА ВЕРСІЯ: прицілі
+const DT = { list: [], streams: new Map(), active: null, busy: false };
+const DTX = {
+  uk: { aim: 'Приціл', aimS: 'тягніть на вікно пульта', add: '+ Приціл', name: n => `Приціл ${n}`, perm: 'Дозвольте ОКО-ШІ «Запис екрана» в Системних параметрах і перезапустіть програму', permBtn: 'Відкрити налаштування', hint: 'Натисніть «Приціл» і перетягніть червоний приціл на вікно з відео дрона. Рамку можна посунути за заголовок і змінити розмір за кут.' },
+  en: { aim: 'Crosshair', aimS: 'drag onto the controller window', add: '+ Crosshair', name: n => `Crosshair ${n}`, perm: 'Allow OKO-AI "Screen Recording" in System Settings and restart the app', permBtn: 'Open settings', hint: 'Press "Crosshair" and drag the red crosshair onto the drone video window. Move the frame by its title, resize by the corner.' },
+};
+const dx = k => (DTX[S.lang] || DTX.uk)[k];
+function dtLang() {
+  if (!window.okoDesktop) return;
+  const b = $('btnScreen'); if (b) { b.querySelector('b').textContent = dx('aim'); b.querySelector('small').textContent = dx('aimS'); }
+  if ($('tbAdd')) $('tbAdd').textContent = dx('add');
+  renderTbar();
+}
+function renderTbar() {
+  const bar = $('tbar'); if (!bar) return;
+  bar.querySelector('.tb-list').innerHTML = DT.list.map(x => {
+    const n = x.tracks.filter(k => confirmed(k) && k.miss === 0 && (k.cls === 'INF' || k.cls === 'AIR')).length;
+    return `<button class="tb${x.id === DT.active ? ' on' : ''}${n ? ' hot' : ''}" data-id="${x.id}">${dx('name')(x.n)}${n ? ` · ${n}` : ''}</button>`;
+  }).join('');
+}
+async function displayStream(t) {
+  const key = String(t.displayId);
+  if (DT.streams.has(key)) return DT.streams.get(key);
+  const srcs = await okoDesktop.sources();
+  const src = srcs.find(x => x.displayId === key) || (srcs.length === 1 ? srcs[0] : srcs[DT.streams.size % Math.max(1, srcs.length)]);
+  if (!src) throw new Error('no screen source');
+  const st = await navigator.mediaDevices.getUserMedia({ audio: false, video: { mandatory: { chromeMediaSource: 'desktop', chromeMediaSourceId: src.id, maxWidth: Math.round(t.display.width * t.display.scale), maxHeight: Math.round(t.display.height * t.display.scale), maxFrameRate: 30 } } });
+  const v = document.createElement('video'); v.muted = true; v.playsInline = true; v.srcObject = st; await v.play();
+  const rec = { video: v, stream: st }; DT.streams.set(key, rec); return rec;
+}
+async function onTargets(list) {
+  // оновити список, зберігши треки існуючих прицілів
+  const old = new Map(DT.list.map(x => [x.id, x]));
+  DT.list = list.map(t => Object.assign(old.get(t.id) || { tracks: [], prevGray: null, fresh: new Set() }, t));
+  if (!DT.list.find(x => x.id === DT.active)) DT.active = DT.list.length ? DT.list[DT.list.length - 1].id : null;
+  // прибрати потоки моніторів, де вже немає прицілів
+  for (const [k, v] of DT.streams) if (!DT.list.some(x => String(x.displayId) === k)) { v.stream.getTracks().forEach(z => z.stop()); DT.streams.delete(k); }
+  if (DT.list.length && srcKind !== 'targets') {
+    if (running) stopSource(true);
+    if (window.okoDesktop.platform === 'darwin') { const a = await okoDesktop.screenAccess(); if (a === 'denied') { permBanner(true); } }
+    show('loading', true);
+    try { await loadModel(); } catch (e) { show('loading', false); return; }
+    srcKind = 'targets'; running = true; paused = false; prevGray = null;
+    show('start', false); show('loading', false); show('controls', true); show('tbar', true);
+    setStatus('ok', `${t('stRun')} · ${ep}`); updPause();
+    requestAnimationFrame(render); analyseTargets();
+  } else if (!DT.list.length && srcKind === 'targets') { stopSource(); }
+  renderTbar(); updCounts();
+}
+function permBanner(on) {
+  let b = $('permBanner');
+  if (!b && on) { b = document.createElement('div'); b.id = 'permBanner'; b.className = 'toast perm'; $('stage').appendChild(b); }
+  if (!b) return;
+  if (!on) { b.remove(); return; }
+  b.innerHTML = `${dx('perm')} <button class="mini" id="permOpen">${dx('permBtn')}</button>`; b.hidden = false;
+  $('permOpen').onclick = () => okoDesktop.openScreenSettings();
+}
+function cropOf(x, rec) {
+  const v = rec.video, k = v.videoWidth / x.display.width;
+  const sx = Math.max(0, (x.rect.x - x.display.x) * k), sy = Math.max(0, (x.rect.y - x.display.y) * k);
+  const sw = Math.min(v.videoWidth - sx, x.rect.width * k), sh = Math.min(v.videoHeight - sy, x.rect.height * k);
+  return [sx, sy, Math.max(2, sw), Math.max(2, sh)];
+}
+async function analyseTargets() {
+  let i = 0, blackChecked = false;
+  while (running && srcKind === 'targets') {
+    if (paused || !DT.list.length) { await new Promise(r => setTimeout(r, 120)); continue; }
+    const x = DT.list[i++ % DT.list.length];
+    let rec; try { rec = await displayStream(x); } catch (e) { console.warn(e); permBanner(true); await new Promise(r => setTimeout(r, 1500)); continue; }
+    if (rec.video.readyState < 2) { await new Promise(r => setTimeout(r, 60)); continue; }
+    const t0 = performance.now();
+    const [sx, sy, sw, sh] = cropOf(x, rec);
+    const sc = Math.min(1, 1280 / sw), W = Math.round(sw * sc), H = Math.round(sh * sc);
+    grab.width = W; grab.height = H; gctx.drawImage(rec.video, sx, sy, sw, sh, 0, 0, W, H);
+    if (!blackChecked) { // Mac без дозволу віддає порожній (чорний) кадр
+      blackChecked = true; const d = gctx.getImageData(0, 0, Math.min(W, 64), Math.min(H, 64)).data; let m = 0; for (let j = 0; j < d.length; j += 4) m = Math.max(m, d[j], d[j + 1], d[j + 2]);
+      if (m < 3 && okoDesktop.platform === 'darwin') permBanner(true);
+    }
+    x.W = W; x.H = H;
+    const thr = Math.max(0.08, (60 - S.sens) / 100);
+    let dets; try { dets = await detect(grab, W, H, thr, S.small); } catch (e) { console.error(e); await new Promise(r => setTimeout(r, 300)); continue; }
+    if (!running || srcKind !== 'targets' || !DT.list.includes(x)) continue;
+    // курсор миші над відео — не ціль
+    try {
+      const c = await okoDesktop.cursor(), kx = W / x.rect.width, cx = (c.x - x.rect.x) * kx, cy = (c.y - x.rect.y) * kx;
+      if (cx > -20 && cy > -20 && cx < W + 20 && cy < H + 20) dets = dets.filter(d => !(cx > d.box[0] - 25 && cx < d.box[2] + 25 && cy > d.box[1] - 25 && cy < d.box[3] + 25 && (d.box[2] - d.box[0]) * (d.box[3] - d.box[1]) < 0.02 * W * H));
+      x.cur = [cx, cy];
+    } catch (e) {}
+    // свої треки й попередній кадр для кожного прицілу
+    tracks = x.tracks; prevGray = x.prevGray;
+    const mots = motion(grab, W, H);
+    for (const m of mots) {
+      if (dets.some(d => iou(d.box, m.box) > 0.05 || cdist(d.box, m.box) < W / 40)) continue;
+      if (x.cur && m.box[0] - 30 < x.cur[0] && x.cur[0] < m.box[2] + 30 && m.box[1] - 30 < x.cur[1] && x.cur[1] < m.box[3] + 30) continue;
+      const area = (m.box[2] - m.box[0]) * (m.box[3] - m.box[1]);
+      if (m.sky) dets.push({ cls: 'AIR', box: m.box, conf: Math.min(0.75, 0.35 + m.n / 60) });
+      else if (area < 0.003 * W * H) dets.push({ cls: 'MOV', box: m.box, conf: Math.min(0.6, 0.2 + m.n / 80) });
+    }
+    const dt = (performance.now() - t0) / 1000;
+    aFps = aFps ? 0.85 * aFps + 0.15 / Math.max(dt, 0.001) : 1 / Math.max(dt, 0.001);
+    trackStep(dets, Math.max(4, Math.round(aFps / DT.list.length * 1.5)));
+    x.tracks = tracks; x.prevGray = prevGray;
+    srcLabel = dx('name')(x.n);
+    const fresh = { inf: 0, air: 0 };
+    for (const k of x.tracks) if (confirmed(k) && !k.logged && k.miss === 0) { k.logged = true; if (S.show[k.cls] && k.cls !== 'MOV') { addLog(k); if (k.cls === 'INF') fresh.inf++; if (k.cls === 'AIR') fresh.air++; } }
+    const live = c => x.tracks.filter(k => confirmed(k) && k.miss === 0 && k.cls === c && S.show[c]).length;
+    okoDesktop.status(x.id, { inf: live('INF'), veh: live('VEH'), air: live('AIR'), fresh });
+    tracks = [];
+    updCounts(); renderTbar();
+    $('ctlInfo').textContent = `${aFps.toFixed(1)} ${t('fps')} · ${DT.list.length}×${recorder && recorder.state === 'recording' ? ' · ● REC' : ''}`;
+    await new Promise(r => setTimeout(r, 0));
+  }
+}
+function renderTargets() {
+  const x = DT.list.find(z => z.id === DT.active); if (!x) return;
+  const rec = DT.streams.get(String(x.displayId)); if (!rec || rec.video.readyState < 2) return;
+  const [sx, sy, sw, sh] = cropOf(x, rec);
+  const sc = Math.min(1, 1280 / sw), W = Math.round(sw * sc), H = Math.round(sh * sc);
+  if (canvas.width !== W || canvas.height !== H) { canvas.width = W; canvas.height = H; }
+  if (!paused) ctx.drawImage(rec.video, sx, sy, sw, sh, 0, 0, W, H);
+  drawOverlay(x.tracks);
+}
+if (window.okoDesktop) {
+  document.body.classList.add('desktop');
+  // «Екран» → «Приціл»
+  const b = $('btnScreen');
+  if (b) {
+    b.querySelector('svg').outerHTML = '<svg viewBox="0 0 24 24" style="stroke:#ff4b3e;filter:drop-shadow(0 0 6px rgba(255,75,62,.5))"><circle cx="12" cy="12" r="7.5"/><circle cx="12" cy="12" r="1.3" fill="#ff4b3e"/><path d="M12 1.5v5M12 17.5v5M1.5 12h5M17.5 12h5"/></svg>';
+    b.onclick = () => okoDesktop.addAim();
+  }
+  // панель прицілів над відео
+  const bar = document.createElement('div'); bar.id = 'tbar'; bar.className = 'tbar'; bar.hidden = true;
+  bar.innerHTML = '<div class="tb-list"></div><button class="tb add" id="tbAdd"></button>';
+  $('stage').appendChild(bar);
+  bar.addEventListener('click', e => {
+    const tb = e.target.closest('.tb'); if (!tb) return;
+    if (tb.id === 'tbAdd') { okoDesktop.addAim(); return; }
+    DT.active = tb.dataset.id; renderTbar();
+  });
+  const hint = document.createElement('div'); hint.className = 'start-s dt-hint'; hint.id = 'dtHint'; document.querySelector('.start').appendChild(hint);
+  const _dtl = dtLang; dtLang = function () { _dtl(); $('dtHint').textContent = dx('hint'); };
+  okoDesktop.onTargets(onTargets);
+  okoDesktop.onFocusTarget(id => { DT.active = id; renderTbar(); });
+  okoDesktop.targets().then(onTargets);
+  // «Стоп» прибирає всі прицілі
+  const st = $('btnStop').onclick; $('btnStop').onclick = () => { if (srcKind === 'targets') DT.list.forEach(x => okoDesktop.removeTarget(x.id)); st(); };
+  okoDesktop.setLang(S.lang); dtLang();
+}
+
 applyLang(); applyToggles();
 loadModel().catch(() => {});
 // Service worker: офлайн-режим + заголовки ізоляції (вмикають багатопотоковий CPU-режим ШІ)
@@ -579,7 +732,7 @@ fetch('autotest.json').then(r => r.ok ? r.json() : null).then(cfg => {
   setInterval(() => {
     const el = {};
     for (const id of ids) { const e = $(id); if (!e) continue; const r = e.getBoundingClientRect(); if (r.width && r.height && e.offsetParent !== null) el[id] = [Math.round(r.left + r.width / 2), Math.round(r.top + r.height / 2)]; }
-    L('OKO_EL', { dpr, w: innerWidth, h: innerHeight, el, ready: !!session, running, ep });
+    L('OKO_EL', { dpr, w: innerWidth, h: innerHeight, el, ready: !!session, running, ep, ctl: $('controls').hidden, st: $('start').hidden, sy: Math.round(scrollY) });
     if (running) L('OKO_RESULT', { inf: +$('cInf').textContent, veh: +$('cVeh').textContent, log: logRows.length, fps: aFps.toFixed(1), ep });
     if (!$('stats').hidden) L('OKO_STATS', { photos: document.querySelectorAll('#stGallery .ph').length });
   }, 2000);
