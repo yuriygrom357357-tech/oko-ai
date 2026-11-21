@@ -9,7 +9,7 @@ const I18N = {
     srcFile: 'Відеозапис', srcFileS: 'файл з дрона', srcScreen: 'Екран', srcScreenS: 'наживо, вікно пульта',
     srcCam: 'Камера', srcCamS: 'HDMI-грабер, вебкамера', demo: 'Демо:', demoDrone: 'дрон у небі', demoInf: 'піхота і техніка',
     loadingModel: 'Завантаження ШІ…', inf: 'ПІХОТА', veh: 'ТЕХНІКА', air: 'ДРОНИ', mov: 'РУХ',
-    show: 'Показувати', smallInf: 'Дрібна піхота (з висоти)', sens: 'Чутливість', log: 'Журнал виявлень',
+    show: 'Показувати', smallInf: 'Дрібна піхота (з висоти)', sens: 'Піхота, техніка', sensAir: 'Дрони', sensH: 'Чутливість', log: 'Журнал виявлень',
     csv: 'CSV', clear: 'Очистити', logEmpty: 'Поки що нічого не виявлено', foot: 'Прототип. Рішення приймає оператор.', credit: 'Розробник: Юрій Мельничук, позивний «Композитор»',
     stReady: 'ШІ готовий', stLoad: 'Завантаження ШІ…', stErr: 'Помилка ШІ', stRun: 'Аналіз',
     lInf: 'ПІХОТА', lVeh: 'ТЕХНІКА', lAir: 'ДРОН', lMov: 'РУХ', hidden: 'схований?',
@@ -24,7 +24,7 @@ const I18N = {
     srcFile: 'Video file', srcFileS: 'drone recording', srcScreen: 'Screen', srcScreenS: 'live, controller window',
     srcCam: 'Camera', srcCamS: 'HDMI grabber, webcam', demo: 'Demo:', demoDrone: 'drone in the sky', demoInf: 'infantry & vehicles',
     loadingModel: 'Loading AI…', inf: 'INFANTRY', veh: 'VEHICLES', air: 'DRONES', mov: 'MOTION',
-    show: 'Show', smallInf: 'Small infantry (high altitude)', sens: 'Sensitivity', log: 'Detection log',
+    show: 'Show', smallInf: 'Small infantry (high altitude)', sens: 'Infantry, vehicles', sensAir: 'Drones', sensH: 'Sensitivity', log: 'Detection log',
     csv: 'CSV', clear: 'Clear', logEmpty: 'Nothing detected yet', foot: 'Prototype. The operator makes the decision.', credit: 'Developer: Yuriy Melnychuk, callsign “Kompozytor”',
     stReady: 'AI ready', stLoad: 'Loading AI…', stErr: 'AI error', stRun: 'Analysing',
     lInf: 'INFANTRY', lVeh: 'VEHICLE', lAir: 'DRONE', lMov: 'MOTION', hidden: 'hidden?',
@@ -42,7 +42,7 @@ const COCO = { 0: 'INF', 1: 'VEH', 2: 'VEH', 3: 'VEH', 5: 'VEH', 6: 'VEH', 7: 'V
 const COCO_IDX = Object.keys(COCO).map(Number);
 
 // ------------------------------------------------------------ налаштування
-const S = { lang: 'uk', show: { INF: true, VEH: true, AIR: true, MOV: true }, small: false, sens: 25 };
+const S = { lang: 'uk', show: { INF: true, VEH: true, AIR: true, MOV: true }, small: false, sens: 25, sensAir: 15 };
 try { Object.assign(S, JSON.parse(localStorage.getItem('oko.settings') || '{}')); } catch (e) {}
 const save = () => { try { localStorage.setItem('oko.settings', JSON.stringify(S)); } catch (e) {} };
 const t = k => (I18N[S.lang] && I18N[S.lang][k]) || I18N.uk[k] || k;
@@ -136,14 +136,15 @@ async function detect(src, W, H, conf, tiles) {
 
 // ------------------------------------------------------------ рух + небо (з компенсацією руху камери)
 const MW = 256;
+let lastSky = null;
 const mcan = document.createElement('canvas'); const mctx = mcan.getContext('2d', { willReadFrequently: true });
 let prevGray = null;
 function grayOf(src, W, H) {
   const mh = Math.round(H * MW / W); mcan.width = MW; mcan.height = mh;
   mctx.drawImage(src, 0, 0, W, H, 0, 0, MW, mh);
-  const d = mctx.getImageData(0, 0, MW, mh).data, g = new Uint8Array(MW * mh);
-  for (let i = 0, j = 0; i < g.length; i++, j += 4) g[i] = (d[j] * 77 + d[j + 1] * 150 + d[j + 2] * 29) >> 8;
-  return { g, w: MW, h: mh };
+  const d = mctx.getImageData(0, 0, MW, mh).data, g = new Uint8Array(MW * mh), c = new Int16Array(MW * mh);
+  for (let i = 0, j = 0; i < g.length; i++, j += 4) { g[i] = (d[j] * 77 + d[j + 1] * 150 + d[j + 2] * 29) >> 8; c[i] = d[j + 2] - d[j]; }
+  return { g, c, w: MW, h: mh };
 }
 function skyMask(G) {
   const { g, w, h } = G, m = new Uint8Array(w * h);
@@ -152,7 +153,7 @@ function skyMask(G) {
   for (let y = 2; y < h - 2; y++) for (let x = 2; x < w - 2; x++) {
     const i = y * w + x;
     const gr = Math.abs(g[i + 2] - g[i - 2]) + Math.abs(g[i + 2 * w] - g[i - 2 * w]);
-    cand[i] = (gr < 14 && g[i] > thrV) ? 1 : 0;
+    cand[i] = (gr < 14 && g[i] > thrV && G.c[i] >= -6) ? 1 : 0; // світле, однорідне, холодного/нейтрального відтінку (не тепла стіна)
   }
   // по стовпцях: небо тягнеться від верху, дрібні "дірки" (дрон) теж небо
   for (let x = 0; x < w; x++) {
@@ -160,8 +161,12 @@ function skyMask(G) {
     for (let y = 2; y < h; y++) {
       if (cand[y * w + x]) { last = y; gap = 0; } else if (++gap > 10) break;
     }
-    if (last > h * 0.04) for (let y = 0; y <= last; y++) m[y * w + x] = 1;
+    if (last > h * 0.04 && cand[3 * w + x]) for (let y = 0; y <= Math.min(last, h * 0.75); y++) m[y * w + x] = 1; // небо починається від верхнього краю
   }
+  // небо — лише велика суцільна ділянка зверху (≥25% ширини, ≥6% кадру); інакше вважаємо, що неба в кадрі немає
+  let cols = 0, tot = 0; for (let x = 0; x < w; x++) if (m[2 * w + x]) cols++; for (let i = 0; i < m.length; i++) tot += m[i];
+  if (cols < w * 0.25 || tot < w * h * 0.06) m.fill(0);
+  lastSky = { m, w, h };
   return m;
 }
 function estimateShift(a, b, w, h, R = 12) {
@@ -184,7 +189,7 @@ function motion(src, W, H) {
     const [dx, dy] = estimateShift(a, b, w, h);
     const bin = new Uint8Array(w * h);
     const sens = S.sens / 25; // більша чутливість → нижчий поріг
-    const tS = 14 / Math.sqrt(sens), tG = 28 / Math.sqrt(sens);
+    const tS = 18 / Math.sqrt(Math.max(5, S.sensAir) / 15), tG = 28 / Math.sqrt(sens);
     for (let y = 1; y < h - 1; y++) {
       const sy = y - dy; if (sy < 1 || sy >= h - 1) continue;
       for (let x = 1; x < w - 1; x++) {
@@ -222,6 +227,34 @@ function motion(src, W, H) {
   return out;
 }
 
+
+// ------------------------------------------------------------ злиття детектора й руху; суворі правила для дронів
+function inSky(box, W, H) {
+  if (!lastSky) return false;
+  const { m, w, h } = lastSky, cx = Math.round((box[0] + box[2]) / 2 / W * w), cy = Math.round((box[1] + box[3]) / 2 / H * h);
+  let n = 0, k = 0; for (let y = cy - 2; y <= cy + 2; y++) for (let x = cx - 2; x <= cx + 2; x++) { if (x < 0 || y < 0 || x >= w || y >= h) continue; k++; n += m[y * w + x]; }
+  return k > 0 && n / k > 0.7;
+}
+function fuse(dets, mots, W, H) {
+  const airK = Math.max(5, S.sensAir) / 15;                       // 15% — стандарт; менше → суворіше
+  // ПТАХ/ЛІТАК/ЗМІЙ від моделі — тільки на небі й з високою впевненістю
+  dets = dets.filter(d => d.cls !== 'AIR' || (inSky(d.box, W, H) && d.conf >= Math.min(0.8, 0.55 / Math.sqrt(airK))));
+  const people = dets.filter(d => d.cls === 'INF' || d.cls === 'VEH');
+  for (const m of mots) {
+    if (dets.some(d => iou(d.box, m.box) > 0.05 || cdist(d.box, m.box) < W / 40)) continue;
+    const bw = m.box[2] - m.box[0], bh = m.box[3] - m.box[1], area = bw * bh;
+    if (m.sky) {
+      // рух на небі: маленька компактна точка, не поруч із людиною/технікою
+      if (area > 0.012 * W * H || bw / bh > 4 || bh / bw > 1.6) continue; // дрон компактний і не «високий» (людина — висока й вузька)
+      if (!inSky(m.box, W, H)) continue;                                 // довкола точки — справжнє небо
+      if (people.some(p => cdist(p.box, m.box) < 3 * Math.max(p.box[2] - p.box[0], p.box[3] - p.box[1]))) continue;
+      if (m.n < 4 / airK) continue;
+      dets.push({ cls: 'AIR', box: m.box, conf: Math.min(0.7, 0.3 + m.n / 80), mot: true });
+    } else if (area < 0.003 * W * H) dets.push({ cls: 'MOV', box: m.box, conf: Math.min(0.6, 0.2 + m.n / 80) });
+  }
+  return dets;
+}
+
 // ------------------------------------------------------------ трекер
 function iou(a, b) {
   const x1 = Math.max(a[0], b[0]), y1 = Math.max(a[1], b[1]), x2 = Math.min(a[2], b[2]), y2 = Math.min(a[3], b[3]);
@@ -247,15 +280,16 @@ function trackStep(dets, maxMiss) {
     k.vel = [0.6 * k.vel[0] + 0.4 * (c1[0] - c0[0]), 0.6 * k.vel[1] + 0.4 * (c1[1] - c0[1])];
     k.box = k.box.map((v, i) => 0.4 * v + 0.6 * d.box[i]);
     k.conf = k.hits > 1 ? 0.7 * k.conf + 0.3 * d.conf : d.conf;
-    k.hits++; k.miss = 0; k.trail.push(c1); if (k.trail.length > 30) k.trail.shift();
+    k.hits++; k.miss = 0; k.trail.push(c1); if (k.trail.length > 30) k.trail.shift(); if (!d.mot) k.mot = false;
     tu.add(ti); du.add(di);
   }
   tracks.forEach((k, ti) => { if (!tu.has(ti)) { k.miss++; k.vel = k.vel.map(v => v * 0.9); } });
-  dets.forEach((d, di) => { if (!du.has(di)) tracks.push({ id: nextId++, cls: d.cls, box: d.box.slice(), conf: d.conf, vel: [0, 0], hits: 1, miss: 0, trail: [], logged: false }); });
+  dets.forEach((d, di) => { if (!du.has(di)) tracks.push({ id: nextId++, cls: d.cls, box: d.box.slice(), conf: d.conf, vel: [0, 0], hits: 1, miss: 0, trail: [], logged: false, mot: !!d.mot }); });
   tracks = tracks.filter(k => k.miss <= maxMiss);
 }
 const shownConf = k => Math.max(0, Math.min(0.99, (k.conf + Math.min(0.15, 0.02 * (k.hits - 1))) * Math.pow(0.85, k.miss)));
-const confirmed = k => k.hits >= (k.cls === 'MOV' ? 4 : k.cls === 'AIR' ? 3 : 2) && (k.miss === 0 || (k.cls !== 'MOV' && k.hits >= 5));
+const flies = k => { if (k.trail.length < 5) return false; const a = k.trail[0], b = k.trail[k.trail.length - 1], sz = Math.max(k.box[2] - k.box[0], k.box[3] - k.box[1], 8); return Math.hypot(b[0] - a[0], b[1] - a[1]) > 1.2 * sz; };
+const confirmed = k => (k.cls === 'AIR' && k.mot ? k.hits >= 6 && flies(k) : k.hits >= (k.cls === 'MOV' ? 4 : k.cls === 'AIR' ? 3 : 2)) && (k.miss === 0 || (k.cls !== 'MOV' && k.hits >= 5));
 
 // ------------------------------------------------------------ журнал
 let logRows = [];
@@ -401,12 +435,7 @@ async function analyse() {
     try { dets = await detect(grab, W, H, thr, S.small); if (window.OKO_DIAG) window.OKO_DIAG.raw = dets.length; } catch (e) { console.error(e); setStatus('err', t('stErr')); await new Promise(r => setTimeout(r, 500)); continue; }
     if (!running) break;
     const mots = motion(grab, W, H);
-    for (const m of mots) {
-      if (dets.some(d => iou(d.box, m.box) > 0.05 || cdist(d.box, m.box) < W / 40)) continue;
-      const area = (m.box[2] - m.box[0]) * (m.box[3] - m.box[1]);
-      if (m.sky) dets.push({ cls: 'AIR', box: m.box, conf: Math.min(0.75, 0.35 + m.n / 60) });
-      else if (area < 0.003 * W * H) dets.push({ cls: 'MOV', box: m.box, conf: Math.min(0.6, 0.2 + m.n / 80) });
-    }
+    dets = fuse(dets, mots, W, H);
     const dt = (performance.now() - t0) / 1000;
     aFps = aFps ? 0.8 * aFps + 0.2 / Math.max(dt, 0.001) : 1 / Math.max(dt, 0.001);
     trackStep(dets, Math.max(4, Math.round(aFps * 1.5)));
@@ -490,6 +519,7 @@ function applyLang() {
 function applyToggles() {
   document.querySelectorAll('.tg').forEach(b => b.classList.toggle('on', !!S.show[b.dataset.cls]));
   $('swSmall').checked = !!S.small; $('sens').value = S.sens; $('sensVal').textContent = S.sens + '%';
+  if (S.sensAir == null) S.sensAir = 15; $('sensAir').value = S.sensAir; $('sensAirVal').textContent = S.sensAir + '%';
 }
 
 // ------------------------------------------------------------ події
@@ -513,6 +543,7 @@ function confirmClear() { try { return window.confirm(t('confirmClear')); } catc
 document.querySelectorAll('.tg').forEach(b => b.onclick = () => { S.show[b.dataset.cls] = !S.show[b.dataset.cls]; save(); applyToggles(); updCounts(); });
 $('swSmall').onchange = e => { S.small = e.target.checked; save(); if (S.small) toast(t('tSmallOn')); };
 $('sens').oninput = e => { S.sens = +e.target.value; $('sensVal').textContent = S.sens + '%'; save(); };
+$('sensAir').oninput = e => { S.sensAir = +e.target.value; $('sensAirVal').textContent = S.sensAir + '%'; save(); };
 $('langUk').onclick = () => { S.lang = 'uk'; save(); applyLang(); };
 $('langEn').onclick = () => { S.lang = 'en'; save(); applyLang(); };
 document.addEventListener('keydown', e => {
@@ -536,7 +567,7 @@ const HELP = {
     'ШІ обводить цілі рамками з типом і <b>впевненістю у %</b>. Пунктир — ціль сховалась, показано, де вона може бути.',
     'Є <b>піхота або дрон</b> — край кадру й лічильник світяться червоним.',
     'Під відео: <b>пауза</b> (Пробіл), <b>запис</b> (R), <b>знімок</b> (S), <b>стоп</b> (Esc).',
-    'Праворуч: які цілі показувати, <b>«Дрібна піхота»</b> для зйомки з висоти, <b>чутливість</b> — вище: більше знаходить, але й більше хибних.',
+    'Праворуч: які цілі показувати, <b>«Дрібна піхота»</b> для зйомки з висоти і дві <b>чутливості</b>: окремо для піхоти/техніки та для <b>дронів</b>. Вище — більше знаходить, але й більше хибних. Якщо «дронів» забагато — зменште повзунок «Дрони».',
     '<b>Журнал</b> — виявлення з часом (CSV для Excel). <b>Статистика</b> — 3 доби з фото кожної цілі та кнопкою <b>Звіт</b>.'],
     leg: [['ПІХОТА', '#ff4b3e', 'червона рамка'], ['ТЕХНІКА', '#ffcf33', 'жовта рамка'], ['ДРОН', '#45f07a', 'зелена рамка'], ['РУХ', '#ff9a1f', 'рух, тип не визначено']] },
   en: { t: 'How to use', more: 'Full guide for all devices', steps: [
@@ -544,7 +575,7 @@ const HELP = {
     'The AI boxes targets with type and <b>confidence %</b>. Dashed box — target hidden, likely position shown.',
     '<b>Infantry or a drone</b> present — the frame edge and counter glow red.',
     'Under the video: <b>pause</b> (Space), <b>record</b> (R), <b>snapshot</b> (S), <b>stop</b> (Esc).',
-    'On the right: which targets to show, <b>Small infantry</b> for high altitude, <b>sensitivity</b> — higher finds more, with more false alarms.',
+    'On the right: which targets to show, <b>Small infantry</b> for high altitude and two <b>sensitivities</b>: infantry/vehicles and <b>drones</b>. Higher finds more, with more false alarms. Too many "drones"? Lower the Drones slider.',
     '<b>Log</b> — detections with time (CSV for Excel). <b>Statistics</b> — 3 days with a photo of every target and a <b>Report</b> button.'],
     leg: [['INFANTRY', '#ff4b3e', 'red box'], ['VEHICLE', '#ffcf33', 'yellow box'], ['DRONE', '#45f07a', 'green box'], ['MOTION', '#ff9a1f', 'motion, type unknown']] },
 };
@@ -652,13 +683,8 @@ async function analyseTargets() {
     // свої треки й попередній кадр для кожного прицілу
     tracks = x.tracks; prevGray = x.prevGray;
     const mots = motion(grab, W, H);
-    for (const m of mots) {
-      if (dets.some(d => iou(d.box, m.box) > 0.05 || cdist(d.box, m.box) < W / 40)) continue;
-      if (x.cur && m.box[0] - 30 < x.cur[0] && x.cur[0] < m.box[2] + 30 && m.box[1] - 30 < x.cur[1] && x.cur[1] < m.box[3] + 30) continue;
-      const area = (m.box[2] - m.box[0]) * (m.box[3] - m.box[1]);
-      if (m.sky) dets.push({ cls: 'AIR', box: m.box, conf: Math.min(0.75, 0.35 + m.n / 60) });
-      else if (area < 0.003 * W * H) dets.push({ cls: 'MOV', box: m.box, conf: Math.min(0.6, 0.2 + m.n / 80) });
-    }
+    const mots2 = x.cur ? mots.filter(m => !(m.box[0] - 30 < x.cur[0] && x.cur[0] < m.box[2] + 30 && m.box[1] - 30 < x.cur[1] && x.cur[1] < m.box[3] + 30)) : mots;
+    dets = fuse(dets, mots2, W, H);
     const dt = (performance.now() - t0) / 1000;
     aFps = aFps ? 0.85 * aFps + 0.15 / Math.max(dt, 0.001) : 1 / Math.max(dt, 0.001);
     trackStep(dets, Math.max(4, Math.round(aFps / DT.list.length * 1.5)));
