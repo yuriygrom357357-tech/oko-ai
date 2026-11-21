@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0f0c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ОКО-ШІ">
+<title>ОКО-ШІ · EYE-AI</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <div class="logo" aria-hidden="true"><span></span></div>
+      <div>
+        <div class="title">ОКО-ШІ <em>EYE-AI</em></div>
+        <div class="sub" data-i18n="subtitle">Аналіз відео з БпЛА</div>
+      </div>
+    </div>
+    <div class="top-right">
+      <button class="stats-btn" id="btnStats" title="Статистика">
+        <svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M8 16v-3M12 16v-5M16 16v-2"/></svg>
+        <span data-st="stats">Статистика</span>
+      </button>
+      <div id="status" class="chip"><i class="dot"></i><span id="statusText">…</span></div>
+      <div class="seg" role="group" aria-label="Language">
+        <button class="seg-b on" data-lang="uk" id="langUk">UA</button>
+        <button class="seg-b" data-lang="en" id="langEn">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="main">
+    <section class="stage-wrap">
+      <div class="stage" id="stage">
+        <canvas id="canvas"></canvas>
+        <video id="video" playsinline muted></video>
+
+        <div class="start" id="start">
+          <div class="start-head">
+            <div class="start-t" data-i18n="chooseSource">Оберіть джерело відео</div>
+            <div class="start-s" data-i18n="chooseHint">ШІ підсвітить піхоту, техніку й дрони в небі</div>
+          </div>
+          <div class="src-grid">
+            <button class="src" id="btnFile">
+              <svg viewBox="0 0 24 24"><path d="M4 5h11l5 5v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/><path d="M10 10l5 3-5 3z"/></svg>
+              <b data-i18n="srcFile">Відеозапис</b><small data-i18n="srcFileS">файл з дрона</small>
+            </button>
+            <button class="src" id="btnScreen">
+              <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/><circle cx="12" cy="10" r="2.2"/></svg>
+              <b data-i18n="srcScreen">Екран</b><small data-i18n="srcScreenS">наживо, вікно пульта</small>
+            </button>
+            <button class="src" id="btnCam">
+              <svg viewBox="0 0 24 24"><rect x="3" y="7" width="13" height="10" rx="2"/><path d="M16 11l5-3v8l-5-3z"/></svg>
+              <b data-i18n="srcCam">Камера</b><small data-i18n="srcCamS">HDMI-грабер, вебкамера</small>
+            </button>
+          </div>
+          <div class="demo-row">
+            <span data-i18n="demo">Демо:</span>
+            <button class="pill" id="btnDemoDrone" data-i18n="demoDrone">дрон у небі</button>
+            <button class="pill" id="btnDemoInf" data-i18n="demoInf">піхота і техніка</button>
+          </div>
+          <input type="file" id="fileInput" accept="video/*" hidden>
+        </div>
+
+        <div class="loading" id="loading" hidden><div class="spin"></div><span data-i18n="loadingModel">Завантаження ШІ…</span></div>
+
+        <div class="controls" id="controls" hidden>
+          <button class="rb" id="btnPause" title="Пауза"><svg viewBox="0 0 24 24"><path id="icoPause" d="M8 5v14M16 5v14"/></svg></button>
+          <button class="rb rec" id="btnRec" title="Запис"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="6"/></svg></button>
+          <button class="rb" id="btnShot" title="Знімок"><svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></button>
+          <span class="ctl-info" id="ctlInfo"></span>
+          <button class="rb stop" id="btnStop" title="Стоп"><svg viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="1.5"/></svg></button>
+        </div>
+        <div class="toast" id="toast" hidden></div>
+      </div>
+    </section>
+
+    <aside class="panel">
+      <div class="tiles">
+        <div class="tile inf" id="tInf"><b id="cInf">0</b><span data-i18n="inf">ПІХОТА</span></div>
+        <div class="tile veh" id="tVeh"><b id="cVeh">0</b><span data-i18n="veh">ТЕХНІКА</span></div>
+        <div class="tile air" id="tAir"><b id="cAir">0</b><span data-i18n="air">ДРОНИ</span></div>
+        <div class="tile mov" id="tMov"><b id="cMov">0</b><span data-i18n="mov">РУХ</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><span data-i18n="show">Показувати</span></div>
+        <div class="toggles">
+          <button class="tg inf on" data-cls="INF" id="tgInf" data-i18n="inf">ПІХОТА</button>
+          <button class="tg veh on" data-cls="VEH" id="tgVeh" data-i18n="veh">ТЕХНІКА</button>
+          <button class="tg air on" data-cls="AIR" id="tgAir" data-i18n="air">ДРОНИ</button>
+          <button class="tg mov on" data-cls="MOV" id="tgMov" data-i18n="mov">РУХ</button>
+        </div>
+        <div class="row">
+          <label class="switch"><input type="checkbox" id="swSmall"><i></i><span data-i18n="smallInf">Дрібна піхота (з висоти)</span></label>
+        </div>
+        <div class="row">
+          <span class="lbl" data-i18n="sens">Чутливість</span>
+          <input type="range" id="sens" min="10" max="60" value="25" step="5">
+          <span class="val" id="sensVal">25%</span>
+        </div>
+      </div>
+
+      <div class="card log-card">
+        <div class="card-h">
+          <span data-i18n="log">Журнал виявлень</span>
+          <div class="card-a">
+            <button class="mini" id="btnCsv" data-i18n="csv">CSV</button>
+            <button class="mini danger" id="btnClear" data-i18n="clear">Очистити</button>
+          </div>
+        </div>
+        <ul class="log" id="log"><li class="empty" data-i18n="logEmpty">Поки що нічого не виявлено</li></ul>
+      </div>
+      <div class="foot" data-i18n="foot">Прототип. Рішення приймає оператор.</div>
+    </aside>
+  </main>
+
+  <section class="stats" id="stats" hidden>
+    <div class="st-wrap">
+      <div class="st-head">
+        <div class="st-title"><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M8 16v-3M12 16v-5M16 16v-2"/></svg><span data-st="title">Статистика · 3 доби</span></div>
+        <div class="st-actions">
+          <button class="mini" id="stReport" data-st="report">Звіт</button>
+          <button class="mini danger" id="stClear" data-st="clearAll">Очистити</button>
+          <button class="rb sm" id="stClose" title="Закрити"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+        </div>
+      </div>
+      <div class="st-filters">
+        <div class="st-chips" id="stDays">
+          <button class="pill on" data-day="all" data-st="all3">3 доби</button>
+          <button class="pill" data-day="0" data-st="today">Сьогодні</button>
+          <button class="pill" data-day="1" data-st="yday">Вчора</button>
+          <button class="pill" data-day="2" data-st="dby">Позавчора</button>
+        </div>
+        <div class="st-chips" id="stCls">
+          <button class="pill on" data-cls="all" data-st="allCls">Усі</button>
+          <button class="pill c-inf" data-cls="INF" data-i18n="inf">ПІХОТА</button>
+          <button class="pill c-veh" data-cls="VEH" data-i18n="veh">ТЕХНІКА</button>
+          <button class="pill c-air" data-cls="AIR" data-i18n="air">ДРОНИ</button>
+        </div>
+      </div>
+      <div class="st-body">
+        <div class="tiles st-tiles">
+          <div class="tile inf"><b id="stINF">0</b><span data-i18n="inf">ПІХОТА</span></div>
+          <div class="tile veh"><b id="stVEH">0</b><span data-i18n="veh">ТЕХНІКА</span></div>
+          <div class="tile air"><b id="stAIR">0</b><span data-i18n="air">ДРОНИ</span></div>
+        </div>
+        <div class="card"><div class="card-h"><span data-st="summary">Підсумок</span></div><div class="st-sum" id="stSummary"></div></div>
+        <div class="card"><div class="card-h"><span data-st="activity">Активність по годинах</span></div><div id="stHeat"></div></div>
+        <div class="card"><div class="card-h"><span><span data-st="photos">Фото-підтвердження</span> · <span id="stCount">0</span></span></div>
+          <div class="gallery" id="stGallery"></div>
+          <button class="pill more" id="stMore" data-st="more" hidden>Показати ще</button>
+        </div>
+      </div>
+    </div>
+  </section>
+  <div class="viewer" id="viewer" hidden>
+    <div class="vw-box">
+      <img id="vwImg" alt="">
+      <div class="vw-bar"><div class="vw-info" id="vwInfo"></div>
+        <button class="mini" id="vwSave" data-st="savePhoto">Зберегти фото</button>
+        <button class="rb sm" id="vwClose"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    </div>
+  </div>
+</div>
+<script src="app.js"></script>
+<script src="stats.js"></script>
+</body>
+</html>
