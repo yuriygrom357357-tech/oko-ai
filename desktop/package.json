@@ -26,6 +26,7 @@
       "preload.js",
       "aim.html",
       "frame.html",
+      "pill.html",
       "icons/**",
       "web/**"
     ],

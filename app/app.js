@@ -595,8 +595,8 @@ try { if (!localStorage.getItem('oko.helpSeen')) setTimeout(() => { if (!running
 // ------------------------------------------------------------ НАСТІЛЬНА ВЕРСІЯ: прицілі
 const DT = { list: [], streams: new Map(), active: null, busy: false };
 const DTX = {
-  uk: { aim: 'Приціл', aimS: 'тягніть на вікно пульта', add: '+ Приціл', name: n => `Приціл ${n}`, perm: 'Дозвольте ОКО-ШІ «Запис екрана» в Системних параметрах і перезапустіть програму', permBtn: 'Відкрити налаштування', hint: 'Натисніть «Приціл» і перетягніть червоний приціл на вікно з відео дрона. Рамку можна посунути за заголовок і змінити розмір за кут.' },
-  en: { aim: 'Crosshair', aimS: 'drag onto the controller window', add: '+ Crosshair', name: n => `Crosshair ${n}`, perm: 'Allow OKO-AI "Screen Recording" in System Settings and restart the app', permBtn: 'Open settings', hint: 'Press "Crosshair" and drag the red crosshair onto the drone video window. Move the frame by its title, resize by the corner.' },
+  uk: { aim: 'Приціл', aimS: 'тягніть на вікно пульта', add: '+ Приціл', name: n => `Приціл ${n}`, perm: 'Дозвольте ОКО-ШІ «Запис екрана» в Системних параметрах і перезапустіть програму', permBtn: 'Відкрити налаштування', hint: 'Внизу екрана є панелька з червоним прицілом. Потягніть приціл на вікно з відео дрона й відпустіть — або клацніть по ньому, а потім по відео. Рамку можна посунути за заголовок і змінити розмір за кут. Esc — скасувати.' },
+  en: { aim: 'Crosshair', aimS: 'drag onto the controller window', add: '+ Crosshair', name: n => `Crosshair ${n}`, perm: 'Allow OKO-AI "Screen Recording" in System Settings and restart the app', permBtn: 'Open settings', hint: 'There is a panel with a red crosshair at the bottom of the screen. Drag the crosshair onto the drone video window and release — or click it, then click the video. Move the frame by its title, resize by the corner. Esc cancels.' },
 };
 const dx = k => (DTX[S.lang] || DTX.uk)[k];
 function dtLang() {
