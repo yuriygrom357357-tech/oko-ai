@@ -1,0 +1,99 @@
+name: Android APK
+on:
+  push:
+    branches: [main]
+    paths: ['app/**', 'native/**', '.github/workflows/android.yml']
+  workflow_dispatch: {}
+permissions:
+  contents: write
+concurrency:
+  group: apk
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with: { node-version: 22 }
+      - uses: actions/setup-java@v5
+        with: { distribution: temurin, java-version: 21 }
+
+      - name: Веб-частина → native/www
+        run: |
+          mkdir -p native/www
+          cp -r app/. native/www/
+          rm -f native/www/sw.js
+
+      - name: Capacitor → Android-проєкт
+        working-directory: native
+        run: |
+          trap 'echo "::error::Збій на команді: $BASH_COMMAND"' ERR
+          npm install
+          npx cap add android
+          npx cap sync android
+          M=android/app/src/main/AndroidManifest.xml
+          sed -i 's#<application#<uses-permission android:name="android.permission.CAMERA" />\n    <uses-feature android:name="android.hardware.camera" android:required="false" />\n    <application#' $M
+          R=android/app/src/main/res
+          rm -rf $R/mipmap-anydpi-v26
+          cp -r res/. $R/
+          cat >> android/app/build.gradle <<'GRADLE'
+
+          android {
+              androidResources { noCompress += ["onnx", "wasm", "mp4"] }
+          }
+          GRADLE
+
+      - name: Зібрати APK
+        working-directory: native/android
+        run: |
+          ./gradlew --no-daemon assembleDebug 2>&1 | tee build.log || { grep -E "error:|FAILED|What went wrong" build.log | head -8 | while read l; do echo "::error::$l"; done; exit 1; }
+          cp app/build/outputs/apk/debug/app-debug.apk ../../oko-ai.apk
+          ls -la ../../oko-ai.apk
+
+      - name: Тестова збірка із самоперевіркою
+        working-directory: native/android
+        run: |
+          echo '{"autotest":true}' > app/src/main/assets/public/autotest.json
+          ./gradlew --no-daemon assembleDebug -q
+          cp app/build/outputs/apk/debug/app-debug.apk ../../oko-ai-test.apk
+
+      - name: Увімкнути KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Самоперевірка на емуляторі Android (справжні натиски)
+        continue-on-error: true
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          cores: 4
+          arch: x86_64
+          target: google_apis
+          ram-size: 4096M
+          disk-size: 6000M
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot
+          script: bash native/emutest.sh oko-ai-test.apk
+
+      - name: Знімок екрана з емулятора
+        if: always()
+        uses: actions/upload-artifact@v4
+        with: { name: emulator-screen, path: emu-screen.png, if-no-files-found: ignore }
+
+      - name: Опублікувати APK (лише після успішної перевірки)
+        if: hashFiles('emu-ok') != ''
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: apk-latest
+          name: ОКО-ШІ — Android (остання збірка)
+          body: |
+            Завантажте `oko-ai.apk` на Android і відкрийте файл (дозвольте встановлення з цього джерела).
+            ШІ-модель уже всередині — інтернет не потрібен. Розробник: Юрій Мельничук, позивний «Композитор».
+          files: oko-ai.apk
+          make_latest: true
+
+      - name: Підсумок перевірки
+        run: test -f emu-ok || { echo "::error::Перевірка на емуляторі не пройдена — APK не опубліковано"; exit 1; }

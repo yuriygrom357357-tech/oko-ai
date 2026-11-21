@@ -10,7 +10,7 @@ const I18N = {
     srcCam: 'Камера', srcCamS: 'HDMI-грабер, вебкамера', demo: 'Демо:', demoDrone: 'дрон у небі', demoInf: 'піхота і техніка',
     loadingModel: 'Завантаження ШІ…', inf: 'ПІХОТА', veh: 'ТЕХНІКА', air: 'ДРОНИ', mov: 'РУХ',
     show: 'Показувати', smallInf: 'Дрібна піхота (з висоти)', sens: 'Чутливість', log: 'Журнал виявлень',
-    csv: 'CSV', clear: 'Очистити', logEmpty: 'Поки що нічого не виявлено', foot: 'Прототип. Рішення приймає оператор.',
+    csv: 'CSV', clear: 'Очистити', logEmpty: 'Поки що нічого не виявлено', foot: 'Прототип. Рішення приймає оператор.', credit: 'Розробник: Юрій Мельничук, позивний «Композитор»',
     stReady: 'ШІ готовий', stLoad: 'Завантаження ШІ…', stErr: 'Помилка ШІ', stRun: 'Аналіз',
     lInf: 'ПІХОТА', lVeh: 'ТЕХНІКА', lAir: 'ДРОН', lMov: 'РУХ', hidden: 'схований?',
     tRecOn: 'Запис увімкнено', tRecSaved: 'Запис збережено', tShot: 'Знімок збережено', tEnd: 'Кінець запису',
@@ -25,7 +25,7 @@ const I18N = {
     srcCam: 'Camera', srcCamS: 'HDMI grabber, webcam', demo: 'Demo:', demoDrone: 'drone in the sky', demoInf: 'infantry & vehicles',
     loadingModel: 'Loading AI…', inf: 'INFANTRY', veh: 'VEHICLES', air: 'DRONES', mov: 'MOTION',
     show: 'Show', smallInf: 'Small infantry (high altitude)', sens: 'Sensitivity', log: 'Detection log',
-    csv: 'CSV', clear: 'Clear', logEmpty: 'Nothing detected yet', foot: 'Prototype. The operator makes the decision.',
+    csv: 'CSV', clear: 'Clear', logEmpty: 'Nothing detected yet', foot: 'Prototype. The operator makes the decision.', credit: 'Developer: Yuriy Melnychuk, callsign “Kompozytor”',
     stReady: 'AI ready', stLoad: 'Loading AI…', stErr: 'AI error', stRun: 'Analysing',
     lInf: 'INFANTRY', lVeh: 'VEHICLE', lAir: 'DRONE', lMov: 'MOTION', hidden: 'hidden?',
     tRecOn: 'Recording', tRecSaved: 'Recording saved', tShot: 'Snapshot saved', tEnd: 'End of video',
@@ -425,6 +425,21 @@ function updCounts() {
 let recorder = null, chunks = [];
 const stamp = () => new Date().toISOString().replace(/[-:]/g, '').replace('T', '_').slice(0, 15);
 function download(blob, name) {
+  // Android/iOS-застосунок: зберігаємо файл і відкриваємо меню «Поділитися» (зберегти, надіслати)
+  const cap = window.Capacitor, P = cap && cap.Plugins;
+  if (cap && cap.isNativePlatform && cap.isNativePlatform() && P && P.Filesystem && P.Share) {
+    const rd = new FileReader();
+    rd.onload = async () => {
+      try {
+        const data = String(rd.result).split(',')[1];
+        const w = await P.Filesystem.writeFile({ path: name, data, directory: 'CACHE' });
+        await P.Share.share({ title: name, files: [w.uri] });
+      } catch (e) { console.warn('share', e); }
+    };
+    rd.readAsDataURL(blob);
+    return;
+  }
+  if (window.okoDesktop && window.okoDesktop.save) { blob.arrayBuffer().then(b => window.okoDesktop.save(name, b)); return; }
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
   document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
 }
@@ -465,6 +480,7 @@ function applyLang() {
   if (session) setStatus('ok', `${running ? t('stRun') : t('stReady')} · ${ep}`);
   if (!logRows.length) renderLogEmpty();
   if (window.OKO_STATS) OKO_STATS.applyLang();
+  if (typeof renderHelp === 'function' && $('help') && !$('help').hidden) renderHelp();
 }
 function applyToggles() {
   document.querySelectorAll('.tg').forEach(b => b.classList.toggle('on', !!S.show[b.dataset.cls]));
@@ -495,6 +511,7 @@ $('sens').oninput = e => { S.sens = +e.target.value; $('sensVal').textContent = 
 $('langUk').onclick = () => { S.lang = 'uk'; save(); applyLang(); };
 $('langEn').onclick = () => { S.lang = 'en'; save(); applyLang(); };
 document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && !$('help').hidden) { closeHelp(); return; }
   if (!running || e.target.tagName === 'INPUT' || !$('stats').hidden) return;
   if (e.code === 'Space') { e.preventDefault(); $('btnPause').click(); }
   else if (e.key === 'r' || e.key === 'к') $('btnRec').click();
@@ -505,6 +522,39 @@ document.addEventListener('keydown', e => {
 // пристрої без захоплення екрана (iPhone, Android) — кнопку не показуємо
 if (!(navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia)) { $('btnScreen').remove(); document.querySelector('.src-grid').style.gridTemplateColumns = 'repeat(2,minmax(140px,200px))'; }
 if (!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) $('btnCam').setAttribute('disabled', '');
+
+
+// ------------------------------------------------------------ довідка «Як користуватися»
+const HELP = {
+  uk: { t: 'Як користуватися', more: 'Повна інструкція для всіх пристроїв', steps: [
+    'Оберіть джерело: <b>Відеозапис</b> (файл з дрона), <b>Екран</b> (вікно пульта), <b>Камера</b> (HDMI-грабер). Щоб спробувати — <b>Демо</b>.',
+    'ШІ обводить цілі рамками з типом і <b>впевненістю у %</b>. Пунктир — ціль сховалась, показано, де вона може бути.',
+    'Є <b>піхота або дрон</b> — край кадру й лічильник світяться червоним.',
+    'Під відео: <b>пауза</b> (Пробіл), <b>запис</b> (R), <b>знімок</b> (S), <b>стоп</b> (Esc).',
+    'Праворуч: які цілі показувати, <b>«Дрібна піхота»</b> для зйомки з висоти, <b>чутливість</b> — вище: більше знаходить, але й більше хибних.',
+    '<b>Журнал</b> — виявлення з часом (CSV для Excel). <b>Статистика</b> — 3 доби з фото кожної цілі та кнопкою <b>Звіт</b>.'],
+    leg: [['ПІХОТА', '#ff4b3e', 'червона рамка'], ['ТЕХНІКА', '#ffcf33', 'жовта рамка'], ['ДРОН', '#45f07a', 'зелена рамка'], ['РУХ', '#ff9a1f', 'рух, тип не визначено']] },
+  en: { t: 'How to use', more: 'Full guide for all devices', steps: [
+    'Choose a source: <b>Video file</b>, <b>Screen</b> (controller window) or <b>Camera</b> (HDMI grabber). To try it — <b>Demo</b>.',
+    'The AI boxes targets with type and <b>confidence %</b>. Dashed box — target hidden, likely position shown.',
+    '<b>Infantry or a drone</b> present — the frame edge and counter glow red.',
+    'Under the video: <b>pause</b> (Space), <b>record</b> (R), <b>snapshot</b> (S), <b>stop</b> (Esc).',
+    'On the right: which targets to show, <b>Small infantry</b> for high altitude, <b>sensitivity</b> — higher finds more, with more false alarms.',
+    '<b>Log</b> — detections with time (CSV for Excel). <b>Statistics</b> — 3 days with a photo of every target and a <b>Report</b> button.'],
+    leg: [['INFANTRY', '#ff4b3e', 'red box'], ['VEHICLE', '#ffcf33', 'yellow box'], ['DRONE', '#45f07a', 'green box'], ['MOTION', '#ff9a1f', 'motion, type unknown']] },
+};
+function renderHelp() {
+  const h = HELP[S.lang] || HELP.uk;
+  $('hpTitle').textContent = h.t; $('hpMore').textContent = h.more; $('btnHelp').title = h.t;
+  $('hpSteps').innerHTML = h.steps.map(x => `<li><span>${x}</span></li>`).join('');
+  $('hpLeg').innerHTML = h.leg.map(([a, c, b]) => `<div style="border-left-color:${c}"><b style="color:${c}">${a}</b>${b}</div>`).join('');
+}
+$('btnHelp').onclick = () => { renderHelp(); $('help').hidden = false; };
+const closeHelp = () => { $('help').hidden = true; try { localStorage.setItem('oko.helpSeen', '1'); } catch (e) {} };
+$('hpClose').onclick = closeHelp;
+$('help').onclick = e => { if (e.target.id === 'help') closeHelp(); };
+// перший запуск — показати довідку, доки людина її не закриє
+try { if (!localStorage.getItem('oko.helpSeen')) setTimeout(() => { if (!running && !localStorage.getItem('oko.helpSeen')) { renderHelp(); $('help').hidden = false; } }, 700); } catch (e) {}
 
 applyLang(); applyToggles();
 loadModel().catch(() => {});
@@ -517,3 +567,20 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
     }
   }).catch(() => {});
 }
+
+// ------------------------------------------------------------ самоперевірка (тільки тестова збірка з autotest.json)
+fetch('autotest.json').then(r => r.ok ? r.json() : null).then(cfg => {
+  if (!cfg || !cfg.autotest) return;
+  const L = (tag, o) => console.log(tag + ' ' + JSON.stringify(o));
+  try { localStorage.setItem('oko.helpSeen', '1'); } catch (e) {} $('help').hidden = true;
+  const dpr = window.devicePixelRatio || 1;
+  addEventListener('pointerdown', e => L('OKO_TOUCH', { x: e.clientX, y: e.clientY, dpr, t: e.target.id || e.target.className }), true);
+  const ids = ['btnDemoInf', 'btnStop', 'btnStats', 'stClose', 'tgInf', 'langEn', 'langUk'];
+  setInterval(() => {
+    const el = {};
+    for (const id of ids) { const e = $(id); if (!e) continue; const r = e.getBoundingClientRect(); if (r.width && r.height && e.offsetParent !== null) el[id] = [Math.round(r.left + r.width / 2), Math.round(r.top + r.height / 2)]; }
+    L('OKO_EL', { dpr, w: innerWidth, h: innerHeight, el, ready: !!session, running, ep });
+    if (running) L('OKO_RESULT', { inf: +$('cInf').textContent, veh: +$('cVeh').textContent, log: logRows.length, fps: aFps.toFixed(1), ep });
+    if (!$('stats').hidden) L('OKO_STATS', { photos: document.querySelectorAll('#stGallery .ph').length });
+  }, 2000);
+}).catch(() => {});

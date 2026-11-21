@@ -3,174 +3,252 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0b0f0c">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="ОКО-ШІ">
-<title>ОКО-ШІ · EYE-AI</title>
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="icons/icon-192.png">
-<link rel="apple-touch-icon" href="icons/icon-180.png">
-<link rel="stylesheet" href="app.css">
+<meta name="theme-color" content="#0a0e0b">
+<title>ОКО-ШІ · EYE-AI — завантаження</title>
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="app/icons/icon-180.png">
+<style>
+:root{--bg:#0a0e0b;--card:#141c16;--line:#26332a;--line2:#334536;--tx:#e6ecdf;--mut:#8c9a88;--olive:#9dbb63;--olive2:#5f7a3a;--blue:#6fb6ff;--inf:#ff4b3e;
+  --sh:0 1px 0 rgba(255,255,255,.07) inset,0 -2px 0 rgba(0,0,0,.35) inset,0 6px 16px rgba(0,0,0,.45)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+body{margin:0;min-height:100vh;color:var(--tx);font:15px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Arial,sans-serif;
+  background:radial-gradient(1000px 500px at 50% -10%,rgba(157,187,99,.10),transparent 60%),
+  repeating-linear-gradient(0deg,rgba(255,255,255,.018) 0 1px,transparent 1px 32px),repeating-linear-gradient(90deg,rgba(255,255,255,.018) 0 1px,transparent 1px 32px),var(--bg);
+  padding:env(safe-area-inset-top) 16px env(safe-area-inset-bottom)}
+.wrap{max-width:920px;margin:0 auto;padding:36px 0 40px}
+.lang{position:absolute;top:calc(14px + env(safe-area-inset-top));right:16px;display:flex;background:#0c120e;border-radius:999px;padding:3px;border:1px solid var(--line2)}
+.lang button{border:0;background:transparent;color:var(--mut);font:700 12.5px/1 inherit;padding:7px 12px;border-radius:999px;cursor:pointer}
+.lang button.on{color:#10160f;background:linear-gradient(180deg,#b8d47c,#7f9c4b);box-shadow:var(--sh)}
+.hero{text-align:center;margin-bottom:26px}
+.logo{width:84px;height:84px;border-radius:24px;margin:0 auto 16px;background:linear-gradient(160deg,#1f2b21,#0e140f);border:1px solid var(--line2);box-shadow:var(--sh),0 0 40px rgba(157,187,99,.12);display:grid;place-items:center}
+.logo span{width:46px;height:28px;border:4px solid var(--olive);border-radius:50%;position:relative}
+.logo span::after{content:"";position:absolute;inset:4px 12px;border-radius:50%;background:var(--inf);box-shadow:0 0 14px var(--inf)}
+h1{margin:0;font-size:34px;letter-spacing:.06em;font-weight:800}
+h1 em{font-style:normal;font-size:14px;color:var(--olive);letter-spacing:.2em;vertical-align:8px;margin-left:8px}
+.lead{color:var(--mut);margin:8px auto 0;max-width:560px}
+.legend{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:14px;font-size:12.5px;font-weight:700;letter-spacing:.08em}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.rec{margin:26px 0 12px}
+.sec{color:var(--blue);font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;margin:0 4px 10px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.dl{position:relative;display:flex;align-items:center;gap:14px;padding:16px 18px;border-radius:22px;text-decoration:none;color:inherit;cursor:pointer;text-align:left;
+  background:linear-gradient(170deg,#1b271e,#111813);border:1px solid var(--line2);box-shadow:var(--sh);font:inherit;width:100%;transition:transform .12s,border-color .2s,box-shadow .2s}
+.dl:hover{border-color:var(--olive2);box-shadow:var(--sh),0 0 0 3px rgba(157,187,99,.12)}
+.dl:active{transform:translateY(2px)}
+.dl svg{width:38px;height:38px;flex:none;fill:none;stroke:var(--olive);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 6px rgba(157,187,99,.3))}
+.dl b{display:block;font-size:16.5px}
+.dl small{display:block;color:var(--mut);font-size:12.5px;margin-top:2px}
+.dl .go{margin-left:auto;font-size:20px;color:var(--olive)}
+.dl.big{padding:22px 22px;border-color:#5f7a3a;background:linear-gradient(170deg,#2a3a22,#151f16)}
+.dl.big svg{width:48px;height:48px}
+.dl.big b{font-size:20px}
+.dl.big .cta{margin-left:auto;padding:11px 18px;border-radius:999px;font-weight:800;color:#10160f;background:linear-gradient(180deg,#c3df85,#7f9c4b);box-shadow:var(--sh);white-space:nowrap}
+.dl.soon{opacity:.55;cursor:default}.dl.soon:hover{border-color:var(--line2);box-shadow:var(--sh)}
+.tag{margin-left:auto;flex:none;font-size:10.5px;font-weight:800;letter-spacing:.08em;padding:3px 8px;border-radius:999px;background:#0c120e;border:1px solid var(--line2);color:var(--mut)}
+.notes{margin-top:26px;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.note{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px 16px;font-size:13.5px;color:#c7d1c2}
+.note b{color:var(--tx)}
+.dev{margin-top:30px;display:flex;flex-direction:column;align-items:center;gap:2px;padding:14px;border-top:1px solid var(--line)}
+.dev span{color:var(--mut);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase}.dev b{font-size:16px;letter-spacing:.03em}.dev .cs{color:var(--olive);text-transform:none;letter-spacing:.04em;font-size:13px;font-weight:700}
+.foot{text-align:center;color:#5f6c5c;font-size:12px;margin-top:10px}
+.guide{margin-top:30px;scroll-margin-top:16px}
+.howto{display:inline-block;color:var(--blue);font-weight:700;font-size:13.5px;text-decoration:none;padding:8px 14px;border-radius:999px;border:1px solid #23415e;background:rgba(111,182,255,.06)}
+.gtabs{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 12px}
+.gtab{border:1px solid var(--line2);background:linear-gradient(180deg,#1b251d,#121913);color:var(--tx);font:600 13.5px/1 inherit;padding:10px 15px;border-radius:999px;box-shadow:var(--sh);cursor:pointer}
+.gtab.on{color:#10160f;background:linear-gradient(180deg,#c3df85,#7f9c4b);border-color:var(--olive2);font-weight:800}
+.gbody{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.gcol{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:16px 18px}
+.gcol h3{margin:0 0 10px;font-size:14px;color:var(--blue);letter-spacing:.06em;text-transform:uppercase}
+.gsteps{margin:0;padding:0;list-style:none;counter-reset:g;display:flex;flex-direction:column;gap:9px}
+.gsteps li{counter-increment:g;display:grid;grid-template-columns:26px minmax(0,1fr);gap:10px;font-size:14px;color:#d3dccf;line-height:1.45}
+.gsteps li::before{content:counter(g);width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:12.5px;color:#10160f;background:linear-gradient(180deg,#c3df85,#7f9c4b)}
+.gsteps b{color:var(--tx)}
+.glegend{margin-top:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px}
+.glegend div{background:#0f1511;border:1px solid var(--line);border-left:4px solid;border-radius:12px;padding:9px 12px;font-size:13px;color:#c7d1c2}
+.glegend b{display:block;font-size:12px;letter-spacing:.08em}
+@media (max-width:700px){.gbody{grid-template-columns:1fr}}
+/* модальне вікно */
+.modal{position:fixed;inset:0;z-index:10;background:rgba(5,8,6,.8);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:grid;place-items:center;padding:16px}
+.mbox{width:min(460px,100%);background:#121913;border:1px solid var(--line2);border-radius:24px;padding:22px;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+.mbox h2{margin:0 0 6px;font-size:20px}
+.mbox p{color:var(--mut);margin:0 0 14px;font-size:14px}
+.steps{list-style:none;margin:0 0 18px;padding:0;display:flex;flex-direction:column;gap:10px}
+.steps li{display:flex;gap:12px;align-items:center;background:#0e1410;border:1px solid var(--line);border-radius:14px;padding:11px 12px;font-size:14.5px}
+.steps li i{flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-weight:800;color:#10160f;background:linear-gradient(180deg,#c3df85,#7f9c4b)}
+.steps svg{width:20px;height:20px;vertical-align:-4px;fill:none;stroke:var(--blue);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.mrow{display:flex;gap:10px}
+.btn{flex:1;border:1px solid var(--line2);border-radius:999px;padding:12px 16px;font:700 14.5px/1 inherit;color:var(--tx);background:linear-gradient(180deg,#223024,#151d17);box-shadow:var(--sh);cursor:pointer;text-align:center;text-decoration:none}
+.btn.pri{color:#10160f;background:linear-gradient(180deg,#c3df85,#7f9c4b);border-color:var(--olive2)}
+@media (max-width:560px){h1{font-size:28px}.wrap{padding-top:52px}.dl.big{flex-wrap:wrap}.dl.big .cta{width:100%;text-align:center;margin-top:6px}}
+</style>
 </head>
 <body>
-<div class="app">
-  <header class="top">
-    <div class="brand">
-      <div class="logo" aria-hidden="true"><span></span></div>
-      <div>
-        <div class="title">ОКО-ШІ <em>EYE-AI</em></div>
-        <div class="sub" data-i18n="subtitle">Аналіз відео з БпЛА</div>
-      </div>
+<div class="lang"><button id="lUk" class="on">UA</button><button id="lEn">EN</button></div>
+<div class="wrap">
+  <div class="hero">
+    <div class="logo"><span></span></div>
+    <h1>ОКО-ШІ<em>EYE-AI</em></h1>
+    <p class="lead" data-t="lead">Штучний інтелект для аналізу відео з БпЛА. Підсвічує піхоту, техніку й дрони в небі, веде журнал і статистику з фото. Працює без інтернету.</p>
+    <div class="legend"><span style="color:#ff4b3e"><i style="background:#ff4b3e"></i><t data-t="inf">ПІХОТА</t></span><span style="color:#ffcf33"><i style="background:#ffcf33"></i><t data-t="veh">ТЕХНІКА</t></span><span style="color:#45f07a"><i style="background:#45f07a"></i><t data-t="air">ДРОНИ</t></span></div>
+  </div>
+
+  <div style="text-align:center;margin-top:-8px"><a href="#guide" class="howto" data-t="howto">Як користуватися ↓</a></div>
+  <div class="rec" id="recWrap">
+    <div class="sec" data-t="forYou">Для вашого пристрою</div>
+    <div id="rec"></div>
+  </div>
+  <div class="sec" data-t="allVer">Усі версії</div>
+  <div class="grid" id="grid"></div>
+
+  <div class="guide" id="guide">
+    <div class="sec" data-t="gT">Як користуватися</div>
+    <div class="gtabs" id="gtabs"></div>
+    <div class="gbody">
+      <div class="gcol"><h3 data-t="gInst">Встановлення</h3><ol class="gsteps" id="gInst"></ol></div>
+      <div class="gcol"><h3 data-t="gUse">Як працювати</h3><ol class="gsteps" id="gUse"></ol></div>
     </div>
-    <div class="top-right">
-      <button class="stats-btn" id="btnStats" title="Статистика">
-        <svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M8 16v-3M12 16v-5M16 16v-2"/></svg>
-        <span data-st="stats">Статистика</span>
-      </button>
-      <div id="status" class="chip"><i class="dot"></i><span id="statusText">…</span></div>
-      <div class="seg" role="group" aria-label="Language">
-        <button class="seg-b on" data-lang="uk" id="langUk">UA</button>
-        <button class="seg-b" data-lang="en" id="langEn">EN</button>
-      </div>
-    </div>
-  </header>
+    <div class="glegend" id="gLeg"></div>
+  </div>
 
-  <main class="main">
-    <section class="stage-wrap">
-      <div class="stage" id="stage">
-        <canvas id="canvas"></canvas>
-        <video id="video" playsinline muted></video>
+  <div class="notes" hidden>
+    <div class="note" data-t="n1"><b>Windows:</b> при першому запуску може з'явитися «Windows захистив ваш ПК» → «Докладніше» → «Усе одно запустити».</div>
+    <div class="note" data-t="n2"><b>Mac:</b> відкрийте .dmg і перетягніть ОКО-ШІ в «Програми». Перший запуск: правий клік → «Відкрити». Для прицілу дозвольте «Запис екрана».</div>
+    <div class="note" data-t="n3"><b>Android:</b> завантажте файл .apk і відкрийте його. Телефон попросить дозволити встановлення з цього джерела — дозвольте.</div>
+  </div>
+  <div class="dev"><span data-t="devL">Розробник</span><b data-t="devN">Юрій Мельничук</b><span class="cs" data-t="devC">позивний «Композитор»</span></div>
+  <div class="foot" data-t="foot">Для внутрішнього користування. Прототип — рішення приймає оператор.</div>
+</div>
 
-        <div class="start" id="start">
-          <div class="start-head">
-            <div class="start-t" data-i18n="chooseSource">Оберіть джерело відео</div>
-            <div class="start-s" data-i18n="chooseHint">ШІ підсвітить піхоту, техніку й дрони в небі</div>
-          </div>
-          <div class="src-grid">
-            <button class="src" id="btnFile">
-              <svg viewBox="0 0 24 24"><path d="M4 5h11l5 5v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/><path d="M10 10l5 3-5 3z"/></svg>
-              <b data-i18n="srcFile">Відеозапис</b><small data-i18n="srcFileS">файл з дрона</small>
-            </button>
-            <button class="src" id="btnScreen">
-              <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/><circle cx="12" cy="10" r="2.2"/></svg>
-              <b data-i18n="srcScreen">Екран</b><small data-i18n="srcScreenS">наживо, вікно пульта</small>
-            </button>
-            <button class="src" id="btnCam">
-              <svg viewBox="0 0 24 24"><rect x="3" y="7" width="13" height="10" rx="2"/><path d="M16 11l5-3v8l-5-3z"/></svg>
-              <b data-i18n="srcCam">Камера</b><small data-i18n="srcCamS">HDMI-грабер, вебкамера</small>
-            </button>
-          </div>
-          <div class="demo-row">
-            <span data-i18n="demo">Демо:</span>
-            <button class="pill" id="btnDemoDrone" data-i18n="demoDrone">дрон у небі</button>
-            <button class="pill" id="btnDemoInf" data-i18n="demoInf">піхота і техніка</button>
-          </div>
-          <input type="file" id="fileInput" accept="video/*" hidden>
-        </div>
-
-        <div class="loading" id="loading" hidden><div class="spin"></div><span data-i18n="loadingModel">Завантаження ШІ…</span></div>
-
-        <div class="controls" id="controls" hidden>
-          <button class="rb" id="btnPause" title="Пауза"><svg viewBox="0 0 24 24"><path id="icoPause" d="M8 5v14M16 5v14"/></svg></button>
-          <button class="rb rec" id="btnRec" title="Запис"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="6"/></svg></button>
-          <button class="rb" id="btnShot" title="Знімок"><svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></button>
-          <span class="ctl-info" id="ctlInfo"></span>
-          <button class="rb stop" id="btnStop" title="Стоп"><svg viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="1.5"/></svg></button>
-        </div>
-        <div class="toast" id="toast" hidden></div>
-      </div>
-    </section>
-
-    <aside class="panel">
-      <div class="tiles">
-        <div class="tile inf" id="tInf"><b id="cInf">0</b><span data-i18n="inf">ПІХОТА</span></div>
-        <div class="tile veh" id="tVeh"><b id="cVeh">0</b><span data-i18n="veh">ТЕХНІКА</span></div>
-        <div class="tile air" id="tAir"><b id="cAir">0</b><span data-i18n="air">ДРОНИ</span></div>
-        <div class="tile mov" id="tMov"><b id="cMov">0</b><span data-i18n="mov">РУХ</span></div>
-      </div>
-
-      <div class="card">
-        <div class="card-h"><span data-i18n="show">Показувати</span></div>
-        <div class="toggles">
-          <button class="tg inf on" data-cls="INF" id="tgInf" data-i18n="inf">ПІХОТА</button>
-          <button class="tg veh on" data-cls="VEH" id="tgVeh" data-i18n="veh">ТЕХНІКА</button>
-          <button class="tg air on" data-cls="AIR" id="tgAir" data-i18n="air">ДРОНИ</button>
-          <button class="tg mov on" data-cls="MOV" id="tgMov" data-i18n="mov">РУХ</button>
-        </div>
-        <div class="row">
-          <label class="switch"><input type="checkbox" id="swSmall"><i></i><span data-i18n="smallInf">Дрібна піхота (з висоти)</span></label>
-        </div>
-        <div class="row">
-          <span class="lbl" data-i18n="sens">Чутливість</span>
-          <input type="range" id="sens" min="10" max="60" value="25" step="5">
-          <span class="val" id="sensVal">25%</span>
-        </div>
-      </div>
-
-      <div class="card log-card">
-        <div class="card-h">
-          <span data-i18n="log">Журнал виявлень</span>
-          <div class="card-a">
-            <button class="mini" id="btnCsv" data-i18n="csv">CSV</button>
-            <button class="mini danger" id="btnClear" data-i18n="clear">Очистити</button>
-          </div>
-        </div>
-        <ul class="log" id="log"><li class="empty" data-i18n="logEmpty">Поки що нічого не виявлено</li></ul>
-      </div>
-      <div class="foot" data-i18n="foot">Прототип. Рішення приймає оператор.</div>
-    </aside>
-  </main>
-
-  <section class="stats" id="stats" hidden>
-    <div class="st-wrap">
-      <div class="st-head">
-        <div class="st-title"><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M8 16v-3M12 16v-5M16 16v-2"/></svg><span data-st="title">Статистика · 3 доби</span></div>
-        <div class="st-actions">
-          <button class="mini" id="stReport" data-st="report">Звіт</button>
-          <button class="mini danger" id="stClear" data-st="clearAll">Очистити</button>
-          <button class="rb sm" id="stClose" title="Закрити"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
-        </div>
-      </div>
-      <div class="st-filters">
-        <div class="st-chips" id="stDays">
-          <button class="pill on" data-day="all" data-st="all3">3 доби</button>
-          <button class="pill" data-day="0" data-st="today">Сьогодні</button>
-          <button class="pill" data-day="1" data-st="yday">Вчора</button>
-          <button class="pill" data-day="2" data-st="dby">Позавчора</button>
-        </div>
-        <div class="st-chips" id="stCls">
-          <button class="pill on" data-cls="all" data-st="allCls">Усі</button>
-          <button class="pill c-inf" data-cls="INF" data-i18n="inf">ПІХОТА</button>
-          <button class="pill c-veh" data-cls="VEH" data-i18n="veh">ТЕХНІКА</button>
-          <button class="pill c-air" data-cls="AIR" data-i18n="air">ДРОНИ</button>
-        </div>
-      </div>
-      <div class="st-body">
-        <div class="tiles st-tiles">
-          <div class="tile inf"><b id="stINF">0</b><span data-i18n="inf">ПІХОТА</span></div>
-          <div class="tile veh"><b id="stVEH">0</b><span data-i18n="veh">ТЕХНІКА</span></div>
-          <div class="tile air"><b id="stAIR">0</b><span data-i18n="air">ДРОНИ</span></div>
-        </div>
-        <div class="card"><div class="card-h"><span data-st="summary">Підсумок</span></div><div class="st-sum" id="stSummary"></div></div>
-        <div class="card"><div class="card-h"><span data-st="activity">Активність по годинах</span></div><div id="stHeat"></div></div>
-        <div class="card"><div class="card-h"><span><span data-st="photos">Фото-підтвердження</span> · <span id="stCount">0</span></span></div>
-          <div class="gallery" id="stGallery"></div>
-          <button class="pill more" id="stMore" data-st="more" hidden>Показати ще</button>
-        </div>
-      </div>
-    </div>
-  </section>
-  <div class="viewer" id="viewer" hidden>
-    <div class="vw-box">
-      <img id="vwImg" alt="">
-      <div class="vw-bar"><div class="vw-info" id="vwInfo"></div>
-        <button class="mini" id="vwSave" data-st="savePhoto">Зберегти фото</button>
-        <button class="rb sm" id="vwClose"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
-    </div>
+<div class="modal" id="ios" hidden>
+  <div class="mbox">
+    <h2 data-t="iosT">Встановити на iPhone / iPad</h2>
+    <p data-t="iosP">Програма з'явиться іконкою на екрані й працюватиме без інтернету.</p>
+    <ol class="steps">
+      <li><i>1</i><span data-t="s1">Відкрийте цю сторінку в <b>Safari</b></span></li>
+      <li><i>2</i><span data-t="s2">Натисніть «Відкрити програму» нижче</span></li>
+      <li><i>3</i><span><t data-t="s3">Натисніть «Поділитися»</t> <svg viewBox="0 0 24 24"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M5 11v9h14v-9"/></svg></span></li>
+      <li><i>4</i><span data-t="s4">Оберіть «На екран „Додому“» → «Додати»</span></li>
+    </ol>
+    <div class="mrow"><button class="btn" id="iosClose" data-t="close">Закрити</button><a class="btn pri" href="app/" data-t="openApp">Відкрити програму</a></div>
   </div>
 </div>
-<script src="app.js"></script>
-<script src="stats.js"></script>
+
+<script>
+'use strict';
+const REPO='yuriygrom357357-tech/oko-ai';
+const REL=`https://github.com/${REPO}/releases/download`;
+const T={
+ uk:{lead:'Штучний інтелект для аналізу відео з БпЛА. Підсвічує піхоту, техніку й дрони в небі, веде журнал і статистику з фото. Працює без інтернету.',
+  inf:'ПІХОТА',veh:'ТЕХНІКА',air:'ДРОНИ',forYou:'Для вашого пристрою',allVer:'Усі версії',
+  web:'Працювати в браузері',webS:'одразу, без встановлення',win:'Скачати для Windows',winS:'з прицілом для екранів пульта',
+  mac:'Скачати для Mac',macS:'Apple Silicon (M1–M4), з прицілом',and:'Скачати для Android',andS:'файл .apk, телефон і планшет',
+  ios:'Встановити на iPhone / iPad',iosS:'іконка на екрані, офлайн',soon:'ГОТУЄТЬСЯ',open:'Відкрити',dl:'Скачати',inst:'Встановити',
+  n1:'<b>Windows:</b> при першому запуску може з\'явитися «Windows захистив ваш ПК» → «Докладніше» → «Усе одно запустити».',
+  n2:'<b>Mac:</b> відкрийте .dmg і перетягніть ОКО-ШІ в «Програми». Перший запуск: правий клік → «Відкрити». Для прицілу дозвольте «Запис екрана».',
+  n3:'<b>Android:</b> завантажте файл .apk і відкрийте його. Телефон попросить дозволити встановлення з цього джерела — дозвольте.',
+  foot:'Для внутрішнього користування. Прототип — рішення приймає оператор.',
+  iosT:'Встановити на iPhone / iPad',iosP:'Програма з\'явиться іконкою на екрані й працюватиме без інтернету.',
+  s1:'Відкрийте цю сторінку в <b>Safari</b>',s2:'Натисніть «Відкрити програму» нижче',s3:'Натисніть «Поділитися»',s4:'Оберіть «На екран „Додому“» → «Додати»',
+  howto:'Як користуватися ↓',close:'Закрити',openApp:'Відкрити програму',gT:'Як користуватися',gInst:'Встановлення',gUse:'Як працювати',devL:'Розробник',devN:'Юрій Мельничук',devC:'позивний «Композитор»'},
+ en:{lead:'AI for UAV video analysis. Highlights infantry, vehicles and drones in the sky, keeps a log and photo statistics. Works offline.',
+  inf:'INFANTRY',veh:'VEHICLES',air:'DRONES',forYou:'For your device',allVer:'All versions',
+  web:'Run in the browser',webS:'instantly, no install',win:'Download for Windows',winS:'with crosshair for controller screens',
+  mac:'Download for Mac',macS:'Apple Silicon (M1–M4), with crosshair',and:'Download for Android',andS:'.apk file, phone and tablet',
+  ios:'Install on iPhone / iPad',iosS:'home-screen icon, offline',soon:'COMING',open:'Open',dl:'Download',inst:'Install',
+  n1:'<b>Windows:</b> on first launch you may see "Windows protected your PC" → "More info" → "Run anyway".',
+  n2:'<b>Mac:</b> open the .dmg and drag OKO-AI to Applications. First launch: right-click → Open. Allow "Screen Recording" for the crosshair.',
+  n3:'<b>Android:</b> download the .apk and open it. Allow installing from this source when asked.',
+  foot:'For internal use. Prototype — the operator makes the decision.',
+  iosT:'Install on iPhone / iPad',iosP:'The app appears as a home-screen icon and works offline.',
+  s1:'Open this page in <b>Safari</b>',s2:'Tap "Open the app" below',s3:'Tap "Share"',s4:'Choose "Add to Home Screen" → "Add"',
+  howto:'How to use ↓',close:'Close',openApp:'Open the app',gT:'How to use',gInst:'Installation',gUse:'How it works',devL:'Developer',devN:'Yuriy Melnychuk',devC:'callsign “Kompozytor”'}};
+let L='uk';
+try{const s=JSON.parse(localStorage.getItem('oko.settings')||'{}'); if(s.lang) L=s.lang}catch(e){}
+try{const v=localStorage.getItem('oko.landing.lang'); if(v) L=v}catch(e){}
+const ICON={
+ web:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/></svg>',
+ win:'<svg viewBox="0 0 24 24"><path d="M3 5.5l7.5-1v7H3zM12 4.3L21 3v8.5h-9zM3 12.5h7.5v7L3 18.5zM12 12.5h9V21l-9-1.3z"/></svg>',
+ mac:'<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M1.5 19h21"/></svg>',
+ and:'<svg viewBox="0 0 24 24"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></svg>',
+ ios:'<svg viewBox="0 0 24 24"><rect x="6" y="2.5" width="12" height="19" rx="3"/><path d="M10 5h4"/><circle cx="12" cy="18.3" r=".8"/></svg>'};
+// файли в GitHub Releases (збираються автоматично)
+const ITEMS=[
+ {k:'web',href:'app/',act:'open',ready:true},
+ {k:'win',href:`${REL}/desktop-latest/OKO-AI-Windows.exe`,act:'dl',asset:['desktop-latest','OKO-AI-Windows.exe']},
+ {k:'mac',href:`${REL}/desktop-latest/OKO-AI-Mac.dmg`,act:'dl',asset:['desktop-latest','OKO-AI-Mac.dmg']},
+ {k:'and',href:`${REL}/apk-latest/oko-ai.apk`,act:'dl',asset:['apk-latest','oko-ai.apk']},
+ {k:'ios',href:'#ios',act:'inst',ready:true},
+];
+const ua=navigator.userAgent, touch=navigator.maxTouchPoints>1;
+const dev=/iPhone|iPad|iPod/.test(ua)||(/Macintosh/.test(ua)&&touch)?'ios':/Android/.test(ua)?'and':/Windows/.test(ua)?'win':/Macintosh/.test(ua)?'mac':'web';
+const t=k=>T[L][k];
+function card(it,big){
+  const ready=it.ready, tag=ready?'':`<span class="tag">${t('soon')}</span>`;
+  const right=big?`<span class="cta">${ready?t(it.act==='dl'?'dl':it.act==='inst'?'inst':'open'):t('soon')}</span>`:`<span class="go">${ready?'›':''}</span>`;
+  const attrs=ready?(it.k==='ios'?'role="button" data-ios="1" href="#ios"':`href="${it.href}"`):'aria-disabled="true"';
+  return `<a class="dl${big?' big':''}${ready?'':' soon'}" id="dl-${it.k}${big?'-rec':''}" ${attrs}>${ICON[it.k]}<span><b>${t(it.k)}</b><small>${t(it.k+'S')}</small></span>${big?right:tag+right}</a>`;
+}
+
+const G={
+ uk:{
+  use:['Оберіть джерело: <b>Відеозапис</b> (файл з дрона), <b>Екран</b> (вікно пульта), <b>Камера</b> (HDMI-грабер). Щоб спробувати — натисніть <b>Демо</b>.',
+       'ШІ сам обводить цілі рамками й підписує тип і <b>впевненість у %</b>. Пунктирна рамка — ціль сховалась, показано, де вона може бути.',
+       'Коли є <b>піхота або дрон</b>, край кадру й лічильник світяться червоним.',
+       'Кнопки внизу кадру: <b>пауза</b>, <b>запис</b> відео з рамками, <b>знімок</b>, <b>стоп</b>.',
+       'Праворуч: які цілі показувати, режим <b>«Дрібна піхота»</b> (для зйомки з висоти) і <b>чутливість</b> — вище: знаходить більше, але й більше хибних.',
+       '<b>Журнал</b> — усі виявлення з часом (кнопка CSV — в Excel). <b>Статистика</b> вгорі — 3 доби: підсумок, години активності, фото кожної цілі, кнопка <b>Звіт</b>.'],
+  web:['Відкрийте посилання в <b>Chrome, Edge або Safari</b> і натисніть «Працювати в браузері».','Перше відкриття завантажує ШІ (≈45 МБ). Далі програма працює <b>без інтернету</b>.','Режим <b>Екран</b>: браузер покаже список — оберіть монітор або вікно пульта, з якого йде відео.'],
+  win:['Натисніть «Скачати для Windows» і запустіть файл <b>OKO-AI-Windows.exe</b>.','Якщо з\'явиться «Windows захистив ваш ПК» → <b>«Докладніше» → «Усе одно запустити»</b>.','ОКО-ШІ з\'явиться на панелі задач. Натисніть <b>червоний приціл</b> і перетягніть його на вікно пульта — довкола з\'явиться рамка, підправте її під картинку з дрона. Прицілів можна кілька.'],
+  mac:['Натисніть «Скачати для Mac», відкрийте <b>OKO-AI-Mac.dmg</b> і перетягніть ОКО-ШІ в «Програми».','Перший запуск: <b>правий клік → «Відкрити» → «Відкрити»</b>.','Для прицілу дозвольте <b>«Запис екрана»</b>: Системні параметри → Конфіденційність і безпека → Запис екрана → увімкнути ОКО-ШІ, потім перезапустіть програму.','Програма живе в <b>Dock</b>. Перетягніть <b>червоний приціл</b> на потрібне вікно або монітор — і згорніть ОКО-ШІ, щоб не заважала.'],
+  and:['Натисніть «Скачати для Android» і відкрийте файл <b>oko-ai.apk</b> із «Завантажень».','Телефон попросить дозволити встановлення з цього джерела — <b>дозвольте</b> і натисніть «Встановити».','Працюють <b>Відеозапис</b> і <b>Камера</b>. Записи, знімки й звіти зберігаються через меню <b>«Поділитися»</b> (у Файли, Telegram тощо).'],
+  ios:['Відкрийте це посилання саме в <b>Safari</b> і натисніть «Встановити на iPhone / iPad» → «Відкрити програму».','Натисніть <b>«Поділитися»</b> (квадрат зі стрілкою) → <b>«На екран „Додому“»</b> → «Додати».','З\'явиться іконка ОКО-ШІ — працює <b>без інтернету</b>. Доступні Відеозапис і Камера (сканувати екран iPhone не дозволяє).'],
+  leg:[['ПІХОТА','#ff4b3e','червона рамка'],['ТЕХНІКА','#ffcf33','жовта рамка'],['ДРОН','#45f07a','зелена рамка, у т.ч. точка в небі'],['РУХ','#ff9a1f','тонка рамка: рух, тип не визначено']],
+  tabs:{web:'Браузер',win:'Windows',mac:'Mac',and:'Android',ios:'iPhone / iPad'}},
+ en:{
+  use:['Choose a source: <b>Video file</b>, <b>Screen</b> (controller window) or <b>Camera</b> (HDMI grabber). To try it — press <b>Demo</b>.',
+       'The AI boxes targets and labels the type and <b>confidence %</b>. A dashed box means the target is hidden; its likely position is shown.',
+       'When there is <b>infantry or a drone</b>, the frame edge and the counter glow red.',
+       'Buttons under the video: <b>pause</b>, <b>record</b> video with boxes, <b>snapshot</b>, <b>stop</b>.',
+       'On the right: which targets to show, <b>Small infantry</b> mode (high altitude) and <b>sensitivity</b> — higher finds more but with more false alarms.',
+       '<b>Log</b> — every detection with time (CSV for Excel). <b>Statistics</b> at the top — 3 days: summary, activity hours, a photo of every target, <b>Report</b> button.'],
+  web:['Open the link in <b>Chrome, Edge or Safari</b> and press "Run in the browser".','The first launch downloads the AI (≈45 MB). After that it works <b>offline</b>.','<b>Screen</b> mode: the browser shows a list — pick the monitor or controller window with the drone video.'],
+  win:['Press "Download for Windows" and run <b>OKO-AI-Windows.exe</b>.','If you see "Windows protected your PC" → <b>"More info" → "Run anyway"</b>.','OKO-AI appears in the taskbar. Drag the <b>red crosshair</b> onto the controller window — a frame appears, adjust it to the drone picture. Several crosshairs are possible.'],
+  mac:['Press "Download for Mac", open <b>OKO-AI-Mac.dmg</b> and drag OKO-AI to Applications.','First launch: <b>right-click → Open → Open</b>.','Allow <b>Screen Recording</b> for the crosshair: System Settings → Privacy & Security → Screen Recording → enable OKO-AI, then restart it.','The app lives in the <b>Dock</b>. Drag the <b>red crosshair</b> onto a window or monitor and minimise OKO-AI.'],
+  and:['Press "Download for Android" and open <b>oko-ai.apk</b> from Downloads.','Allow installing from this source when asked and press "Install".','<b>Video file</b> and <b>Camera</b> work. Recordings, snapshots and reports are saved via the <b>Share</b> menu.'],
+  ios:['Open this link in <b>Safari</b>, press "Install on iPhone / iPad" → "Open the app".','Tap <b>Share</b> → <b>"Add to Home Screen"</b> → "Add".','The OKO-AI icon appears and works <b>offline</b>. Video file and Camera are available (iPhone does not allow screen scanning).'],
+  leg:[['INFANTRY','#ff4b3e','red box'],['VEHICLE','#ffcf33','yellow box'],['DRONE','#45f07a','green box, incl. a dot in the sky'],['MOTION','#ff9a1f','thin box: motion, type unknown']],
+  tabs:{web:'Browser',win:'Windows',mac:'Mac',and:'Android',ios:'iPhone / iPad'}}};
+let gTab=dev;
+function renderGuide(){
+  const g=G[L];
+  document.getElementById('gtabs').innerHTML=['web','win','mac','and','ios'].map(k=>`<button class="gtab${k===gTab?' on':''}" data-g="${k}">${g.tabs[k]}</button>`).join('');
+  document.getElementById('gInst').innerHTML=g[gTab].map(x=>`<li><span>${x}</span></li>`).join('');
+  document.getElementById('gUse').innerHTML=g.use.map(x=>`<li><span>${x}</span></li>`).join('');
+  document.getElementById('gLeg').innerHTML=g.leg.map(([a,c,b])=>`<div style="border-left-color:${c}"><b style="color:${c}">${a}</b>${b}</div>`).join('');
+  document.querySelectorAll('.gtab').forEach(b=>b.onclick=()=>{gTab=b.dataset.g;renderGuide()});
+}
+function render(){
+  document.documentElement.lang=L;
+  document.querySelectorAll('[data-t]').forEach(e=>e.innerHTML=t(e.dataset.t));
+  document.getElementById('lUk').classList.toggle('on',L==='uk');document.getElementById('lEn').classList.toggle('on',L==='en');
+  const want=ITEMS.find(i=>i.k===dev)||ITEMS[0]; const rec=want.ready?want:ITEMS[0];
+  document.getElementById('rec').innerHTML=card(rec,true)+(rec.k!=='web'?'':'');
+  document.getElementById('grid').innerHTML=ITEMS.filter(i=>i!==rec).map(i=>card(i,false)).join('');
+  document.querySelectorAll('[data-ios]').forEach(a=>a.onclick=e=>{e.preventDefault();document.getElementById('ios').hidden=false});
+  renderGuide();
+}
+document.getElementById('lUk').onclick=()=>{L='uk';try{localStorage.setItem('oko.landing.lang',L)}catch(e){}render()};
+document.getElementById('lEn').onclick=()=>{L='en';try{localStorage.setItem('oko.landing.lang',L)}catch(e){}render()};
+document.getElementById('iosClose').onclick=()=>document.getElementById('ios').hidden=true;
+document.getElementById('ios').onclick=e=>{if(e.target.id==='ios')e.target.hidden=true};
+render();
+// які файли вже зібрані — вмикаємо їхні кнопки
+fetch(`https://api.github.com/repos/${REPO}/releases?per_page=20`).then(r=>r.ok?r.json():[]).then(rels=>{
+  for(const it of ITEMS){ if(!it.asset) continue;
+    const rel=rels.find(r=>r.tag_name===it.asset[0]); it.ready=!!(rel&&rel.assets.some(a=>a.name===it.asset[1]&&a.state==='uploaded')); }
+  render();
+}).catch(()=>{});
+</script>
 </body>
 </html>

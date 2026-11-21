@@ -1,0 +1,7 @@
+{
+  "appId": "ua.okoai.app",
+  "appName": "ОКО-ШІ",
+  "webDir": "www",
+  "backgroundColor": "#0a0e0b",
+  "android": { "backgroundColor": "#0a0e0b" }
+}
