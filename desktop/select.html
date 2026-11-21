@@ -1,0 +1,26 @@
+<!DOCTYPE html><html><head><meta charset="utf-8">
+<style>
+html,body{margin:0;height:100%;overflow:hidden;user-select:none;cursor:crosshair;background:rgba(0,0,0,.28);font:700 14px -apple-system,"Segoe UI",Arial,sans-serif}
+.hint{position:fixed;top:40px;left:50%;transform:translateX(-50%);padding:12px 20px;border-radius:999px;color:#fff;background:rgba(10,14,11,.9);border:1px solid #3d5440;box-shadow:0 8px 24px rgba(0,0,0,.5);pointer-events:none;white-space:nowrap}
+.hint b{color:#45f07a}
+.r{position:fixed;border:3px solid #45f07a;border-radius:6px;background:rgba(69,240,122,.08);box-shadow:0 0 0 9999px rgba(0,0,0,.25),0 0 18px rgba(69,240,122,.6);display:none}
+.sz{position:absolute;right:4px;bottom:4px;font-size:12px;color:#45f07a;background:rgba(0,0,0,.6);padding:2px 6px;border-radius:6px}
+.lbl{position:absolute;left:-3px;top:-26px;padding:3px 10px;border-radius:6px 6px 0 0;color:#06200f;background:#45f07a;font-size:12px;letter-spacing:.05em}
+</style></head><body>
+<div class="hint" id="hint"></div>
+<div class="r" id="r"><div class="lbl" id="lbl"></div><div class="sz" id="sz"></div></div>
+<script>
+const q=new URLSearchParams(location.search), D=window.okoDesktop, en=q.get('lang')==='en', n=q.get('n');
+const ox=+q.get('ox'), oy=+q.get('oy'), $=i=>document.getElementById(i);
+$('hint').innerHTML=en?'Drag a frame around the <b>video area</b> to analyse · Esc — cancel':'Обведіть мишею <b>ділянку відео</b>, яку аналізувати · Esc — скасувати';
+$('lbl').textContent=(en?'SCREEN ':'ЕКРАН ')+n;
+let s=null;
+addEventListener('pointerdown',e=>{s={x:e.clientX,y:e.clientY};document.body.setPointerCapture(e.pointerId);draw(e);$('r').style.display='block';});
+addEventListener('pointermove',e=>{if(s)draw(e);});
+addEventListener('pointerup',e=>{if(!s)return;const r=rect(e);s=null;
+  if(r.w<30||r.h<30){$('r').style.display='none';return;}
+  D.selectDone({x:r.x+ox,y:r.y+oy,width:r.w,height:r.h});});
+addEventListener('keydown',e=>{if(e.key==='Escape')D.selectCancel();});
+function rect(e){return{x:Math.min(s.x,e.clientX),y:Math.min(s.y,e.clientY),w:Math.abs(e.clientX-s.x),h:Math.abs(e.clientY-s.y)};}
+function draw(e){const r=rect(e),el=$('r');el.style.left=r.x+'px';el.style.top=r.y+'px';el.style.width=r.w+'px';el.style.height=r.h+'px';$('sz').textContent=Math.round(r.w)+'×'+Math.round(r.h);}
+</script></body></html>

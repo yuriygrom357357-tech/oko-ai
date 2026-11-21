@@ -1,0 +1,45 @@
+<!DOCTYPE html><html><head><meta charset="utf-8">
+<style>
+html,body{margin:0;height:100%;background:transparent;overflow:hidden;user-select:none;font:800 12px -apple-system,"Segoe UI",Arial,sans-serif}
+.s{position:absolute;right:4px;top:5px;bottom:5px;display:inline-flex;align-items:center;gap:6px;padding:0 6px;border-radius:999px;
+  background:linear-gradient(180deg,rgba(30,42,32,.97),rgba(14,20,15,.97));border:1px solid #3d5440;box-shadow:0 1px 0 rgba(255,255,255,.08) inset,0 8px 22px rgba(0,0,0,.55)}
+.grip{width:10px;align-self:stretch;-webkit-app-region:drag;cursor:move;display:flex;flex-direction:column;justify-content:center;gap:3px;padding-left:3px}
+.grip i{display:block;width:4px;height:4px;border-radius:50%;background:#5f7a3a}
+.add,.app,.z{height:36px;border-radius:999px;display:flex;align-items:center;gap:6px;cursor:pointer;border:1px solid #3d5440;color:#e6ecdf;white-space:nowrap}
+.add{padding:0 12px 0 10px;background:linear-gradient(180deg,#c3df85,#7f9c4b);color:#10160f;border-color:#5f7a3a}
+.add svg{width:18px;height:18px;fill:none;stroke:#10160f;stroke-width:2.2;stroke-dasharray:3 2.5}
+.add:disabled{opacity:.45;cursor:default}
+.app{padding:0 10px 0 8px;background:linear-gradient(180deg,#25332a,#141c16)}
+.app i{width:20px;height:13px;border:2.5px solid #9dbb63;border-radius:50%;position:relative;box-sizing:border-box}
+.app i::after{content:"";position:absolute;inset:2px 4px;border-radius:50%;background:#ff4b3e}
+.zs{display:flex;gap:5px}
+.z{padding:0 4px 0 11px;background:linear-gradient(180deg,#1f9c49,#13612d);border-color:#2fb35c;color:#eafff0}
+.z.alert{background:linear-gradient(180deg,#c9382e,#7c1d17);border-color:#ff4b3e;animation:g 2s ease-in-out infinite}
+@keyframes g{50%{box-shadow:0 0 16px rgba(255,75,62,.8)}}
+.z .k{font-size:10.5px;background:rgba(0,0,0,.3);padding:1px 6px;border-radius:999px}
+.z button{border:0;background:rgba(0,0,0,.3);color:#fff;width:22px;height:22px;border-radius:50%;font:700 13px/22px Arial;cursor:pointer;padding:0}
+.add:active,.app:active,.z:active{transform:translateY(1px)}
+</style></head><body>
+<div class="s" id="s">
+  <div class="grip"><i></i><i></i><i></i></div>
+  <button class="add" id="add"><svg viewBox="0 0 24 24"><rect x="3.5" y="5.5" width="17" height="13" rx="2"/></svg><span id="addT">Виділити зону</span></button>
+  <div class="zs" id="zs"></div>
+  <button class="app" id="app"><i></i><span id="appT">ОКО-ШІ</span></button>
+</div>
+<script>
+const D=window.okoDesktop, q=new URLSearchParams(location.search), $=i=>document.getElementById(i);
+let lang=q.get('lang')||'uk', zones=[], max=10;
+const tx=()=>{ $('addT').textContent=lang==='en'?'Select zone':'Виділити зону'; $('appT').textContent=lang==='en'?'OKO-AI':'ОКО-ШІ'; render(); };
+function render(){
+  const nm=lang==='en'?'Screen ':'Екран ';
+  $('zs').innerHTML=zones.map(z=>`<div class="z${z.alert?' alert':''}" data-id="${z.id}" title="${lang==='en'?'Open in OKO-AI':'Відкрити в ОКО-ШІ'}">${nm}${z.n}${z.alert?`<span class="k">${z.inf?(lang==='en'?'INF ':'ПІХ ')+z.inf:''}${z.inf&&z.air?' · ':''}${z.air?(lang==='en'?'DRN ':'ДРОН ')+z.air:''}</span>`:''}<button data-x="${z.id}" title="${lang==='en'?'Remove':'Прибрати'}">×</button></div>`).join('');
+  $('add').disabled=zones.length>=max;
+  requestAnimationFrame(()=>D.stripSize($('s').getBoundingClientRect().width+10));
+}
+D.onZones((z,m)=>{zones=z;max=m||10;render();});
+D.onLang(l=>{lang=l;tx();});
+$('add').onclick=()=>D.selectZone();
+$('app').onclick=()=>D.openMain();
+$('zs').onclick=e=>{const x=e.target.closest('[data-x]'); if(x){e.stopPropagation();D.stripRemove(x.dataset.x);return;} const z=e.target.closest('.z'); if(z)D.stripFocus(z.dataset.id);};
+tx();
+</script></body></html>

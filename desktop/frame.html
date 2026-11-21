@@ -1,40 +1,39 @@
 <!DOCTYPE html><html><head><meta charset="utf-8">
 <style>
-html,body{margin:0;height:100%;background:transparent;overflow:hidden;user-select:none;font:700 12px -apple-system,"Segoe UI",Arial,sans-serif}
-.fr{position:absolute;inset:0;border:3px solid #ff3b30;border-radius:10px;box-sizing:border-box;box-shadow:0 0 0 1px rgba(0,0,0,.6),inset 0 0 0 1px rgba(0,0,0,.5)}
-.fr.alert{animation:al 2s ease-in-out infinite}
-@keyframes al{0%,100%{box-shadow:0 0 0 1px rgba(0,0,0,.6),0 0 0 rgba(255,59,48,0)}50%{box-shadow:0 0 0 1px rgba(0,0,0,.6),0 0 26px rgba(255,59,48,.95),inset 0 0 30px rgba(255,59,48,.35)}}
-.hd{position:absolute;left:0;right:0;top:0;height:26px;display:flex;align-items:center;gap:8px;padding:0 6px 0 10px;
-  background:linear-gradient(180deg,#ff3b30,#c42820);color:#fff;border-radius:8px 8px 0 0;-webkit-app-region:drag;cursor:move}
-.hd b{letter-spacing:.06em}
-.c{display:flex;gap:6px;margin-left:4px;font-size:11px}
-.c span{background:rgba(0,0,0,.35);padding:2px 7px;border-radius:999px}
-.hd button{-webkit-app-region:no-drag;margin-left:auto;border:0;background:rgba(0,0,0,.3);color:#fff;width:20px;height:20px;border-radius:50%;font:700 12px/20px Arial;cursor:pointer;padding:0}
-.hd .op{margin-left:auto;width:auto;padding:0 8px;border-radius:999px;font-size:11px}
-.hd .op + button{margin-left:0}
-.rs{position:absolute;right:0;bottom:0;width:22px;height:22px;cursor:nwse-resize;background:linear-gradient(135deg,transparent 50%,#ff3b30 50%);border-bottom-right-radius:8px}
+:root{--c:#45f07a;--cd:#1f9c49}
+html,body{margin:0;height:100%;background:transparent;overflow:hidden;user-select:none;font:800 11.5px -apple-system,"Segoe UI",Arial,sans-serif}
+body.alert{--c:#ff3b30;--cd:#c42820}
+.tab{position:absolute;left:0;top:0;height:24px;display:flex;align-items:center;gap:6px;padding:0 4px 0 9px;border-radius:7px 7px 0 0;color:#fff;
+  background:linear-gradient(180deg,var(--c),var(--cd));-webkit-app-region:drag;cursor:move;max-width:calc(100% - 4px);box-sizing:border-box;white-space:nowrap}
+body:not(.alert) .tab{color:#06200f}
+.tab b{letter-spacing:.06em}
+.c span{background:rgba(0,0,0,.3);color:#fff;padding:1px 6px;border-radius:999px;margin-left:3px}
+.tab button{-webkit-app-region:no-drag;border:0;background:rgba(0,0,0,.28);color:#fff;width:18px;height:18px;border-radius:50%;font:700 12px/18px Arial;cursor:pointer;padding:0}
+.box{position:absolute;left:0;right:0;top:24px;bottom:0;border:3px solid var(--c);border-radius:0 6px 6px 6px;box-sizing:border-box;
+  box-shadow:0 0 0 1px rgba(0,0,0,.55),0 0 10px color-mix(in srgb,var(--c) 45%,transparent)}
+body.alert .box{animation:al 2s ease-in-out infinite}
+@keyframes al{0%,100%{box-shadow:0 0 0 1px rgba(0,0,0,.6),0 0 6px rgba(255,59,48,.4)}50%{box-shadow:0 0 0 1px rgba(0,0,0,.6),0 0 28px rgba(255,59,48,.95),inset 0 0 30px rgba(255,59,48,.35)}}
+.rs{position:absolute;right:0;bottom:0;width:20px;height:20px;cursor:nwse-resize;background:linear-gradient(135deg,transparent 50%,var(--c) 50%);border-bottom-right-radius:6px}
 </style></head><body>
-<div class="fr" id="fr"></div>
-<div class="hd" id="hd"><b id="ttl">ПРИЦІЛ 1</b><div class="c" id="cnt"></div><button class="op" id="op">ОКО-ШІ</button><button id="x" title="Прибрати">×</button></div>
+<div class="tab" id="tab"><b id="ttl">ЕКРАН 1</b><span class="c" id="cnt"></span><button id="x" title="Прибрати">×</button></div>
+<div class="box" id="fr"></div>
 <div class="rs" id="rs"></div>
 <script>
 const q=new URLSearchParams(location.search), id=q.get('id'), n=q.get('n'); let lang=q.get('lang')||'uk';
 const D=window.okoDesktop, $=i=>document.getElementById(i);
-const tx=()=>{ $('ttl').textContent=(lang==='en'?'CROSSHAIR ':'ПРИЦІЛ ')+n; $('op').textContent=lang==='en'?'OKO-AI':'ОКО-ШІ'; $('x').title=lang==='en'?'Remove':'Прибрати'; };
+const tx=()=>{ $('ttl').textContent=(lang==='en'?'SCREEN ':'ЕКРАН ')+n; $('x').title=lang==='en'?'Remove':'Прибрати'; };
 tx(); D.onLang(l=>{lang=l;tx();});
-// кліки проходять крізь рамку; «тверді» лише заголовок і кут
-const solid=el=>el&&(el.closest('#hd')||el.closest('#rs'));
-let isSolid=false;
+const solid=el=>el&&(el.closest('#tab')||el.closest('#rs'));
+let isSolid=false, rs=null;
 addEventListener('mousemove',e=>{const s=!!solid(document.elementFromPoint(e.clientX,e.clientY)); if(s!==isSolid){isSolid=s;D.frameMouse(s);}});
 addEventListener('mouseleave',()=>{ if(isSolid&&!rs){isSolid=false;D.frameMouse(false);} });
 $('x').onclick=()=>D.frameClose();
-$('op').onclick=()=>D.frameFocus(id);
-let rs=null;
+$('ttl').ondblclick=()=>D.frameFocus(id);
 $('rs').addEventListener('pointerdown',e=>{rs={x:e.screenX,y:e.screenY};$('rs').setPointerCapture(e.pointerId);D.frameResize(0,0,true);});
 $('rs').addEventListener('pointermove',e=>{if(rs)D.frameResize(e.screenX-rs.x,e.screenY-rs.y,false);});
-$('rs').addEventListener('pointerup',e=>{rs=null;D.frameResizeEnd();});
+$('rs').addEventListener('pointerup',()=>{rs=null;D.frameResizeEnd();});
 D.onStatus(s=>{
-  $('fr').classList.toggle('alert',(s.inf+s.air)>0);
+  document.body.classList.toggle('alert',(s.inf+s.air)>0);
   const L=lang==='en'?{i:'INF',v:'VEH',a:'DRN'}:{i:'ПІХ',v:'ТЕХ',a:'ДРОН'};
   $('cnt').innerHTML=(s.inf?`<span>${L.i} ${s.inf}</span>`:'')+(s.air?`<span>${L.a} ${s.air}</span>`:'')+(s.veh?`<span>${L.v} ${s.veh}</span>`:'');
 });

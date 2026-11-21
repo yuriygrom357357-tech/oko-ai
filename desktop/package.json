@@ -24,9 +24,9 @@
     "files": [
       "main.js",
       "preload.js",
-      "aim.html",
+      "select.html",
       "frame.html",
-      "pill.html",
+      "strip.html",
       "icons/**",
       "web/**"
     ],

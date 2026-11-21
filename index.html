@@ -113,7 +113,7 @@ h1 em{font-style:normal;font-size:14px;color:var(--olive);letter-spacing:.2em;ve
 
   <div class="notes" hidden>
     <div class="note" data-t="n1"><b>Windows:</b> при першому запуску може з'явитися «Windows захистив ваш ПК» → «Докладніше» → «Усе одно запустити».</div>
-    <div class="note" data-t="n2"><b>Mac:</b> відкрийте .dmg і перетягніть ОКО-ШІ в «Програми». Перший запуск: правий клік → «Відкрити». Для прицілу дозвольте «Запис екрана».</div>
+    <div class="note" data-t="n2"><b>Mac:</b> відкрийте .dmg і перетягніть ОКО-ШІ в «Програми». Перший запуск: правий клік → «Відкрити». Для зон дозвольте «Запис екрана».</div>
     <div class="note" data-t="n3"><b>Android:</b> завантажте файл .apk і відкрийте його. Телефон попросить дозволити встановлення з цього джерела — дозвольте.</div>
   </div>
   <div class="dev"><span data-t="devL">Розробник</span><b data-t="devN">Юрій Мельничук</b><span class="cs" data-t="devC">158 навчальний центр · позивний «Композитор»</span></div>
@@ -141,11 +141,11 @@ const REL=`https://github.com/${REPO}/releases/download`;
 const T={
  uk:{lead:'Штучний інтелект для аналізу відео з БпЛА. Підсвічує піхоту, техніку й дрони в небі, веде журнал і статистику з фото. Працює без інтернету.',
   inf:'ПІХОТА',veh:'ТЕХНІКА',air:'ДРОНИ',forYou:'Для вашого пристрою',allVer:'Усі версії',
-  web:'Працювати в браузері',webS:'одразу, без встановлення',win:'Скачати для Windows',winS:'з прицілом для екранів пульта',
-  mac:'Скачати для Mac',macS:'Apple Silicon (M1–M4), з прицілом',and:'Скачати для Android',andS:'файл .apk, телефон і планшет',
+  web:'Працювати в браузері',webS:'одразу, без встановлення',win:'Скачати для Windows',winS:'зони аналізу на екранах пульта',
+  mac:'Скачати для Mac',macS:'Apple Silicon (M1–M4), зони аналізу',and:'Скачати для Android',andS:'файл .apk, телефон і планшет',
   ios:'Встановити на iPhone / iPad',iosS:'іконка на екрані, офлайн',soon:'ГОТУЄТЬСЯ',open:'Відкрити',dl:'Скачати',inst:'Встановити',
   n1:'<b>Windows:</b> при першому запуску може з\'явитися «Windows захистив ваш ПК» → «Докладніше» → «Усе одно запустити».',
-  n2:'<b>Mac:</b> відкрийте .dmg і перетягніть ОКО-ШІ в «Програми». Перший запуск: правий клік → «Відкрити». Для прицілу дозвольте «Запис екрана».',
+  n2:'<b>Mac:</b> відкрийте .dmg і перетягніть ОКО-ШІ в «Програми». Перший запуск: правий клік → «Відкрити». Для зон дозвольте «Запис екрана».',
   n3:'<b>Android:</b> завантажте файл .apk і відкрийте його. Телефон попросить дозволити встановлення з цього джерела — дозвольте.',
   foot:'Для внутрішнього користування. Рішення приймає оператор.',
   iosT:'Встановити на iPhone / iPad',iosP:'Програма з\'явиться іконкою на екрані й працюватиме без інтернету.',
@@ -153,11 +153,11 @@ const T={
   howto:'Як користуватися ↓',close:'Закрити',openApp:'Відкрити програму',gT:'Як користуватися',gInst:'Встановлення',gUse:'Як працювати',devL:'Розробник',devN:'Юрій Мельничук',devC:'158 навчальний центр · позивний «Композитор»'},
  en:{lead:'AI for UAV video analysis. Highlights infantry, vehicles and drones in the sky, keeps a log and photo statistics. Works offline.',
   inf:'INFANTRY',veh:'VEHICLES',air:'DRONES',forYou:'For your device',allVer:'All versions',
-  web:'Run in the browser',webS:'instantly, no install',win:'Download for Windows',winS:'with crosshair for controller screens',
-  mac:'Download for Mac',macS:'Apple Silicon (M1–M4), with crosshair',and:'Download for Android',andS:'.apk file, phone and tablet',
+  web:'Run in the browser',webS:'instantly, no install',win:'Download for Windows',winS:'analysis zones on controller screens',
+  mac:'Download for Mac',macS:'Apple Silicon (M1–M4), analysis zones',and:'Download for Android',andS:'.apk file, phone and tablet',
   ios:'Install on iPhone / iPad',iosS:'home-screen icon, offline',soon:'COMING',open:'Open',dl:'Download',inst:'Install',
   n1:'<b>Windows:</b> on first launch you may see "Windows protected your PC" → "More info" → "Run anyway".',
-  n2:'<b>Mac:</b> open the .dmg and drag OKO-AI to Applications. First launch: right-click → Open. Allow "Screen Recording" for the crosshair.',
+  n2:'<b>Mac:</b> open the .dmg and drag OKO-AI to Applications. First launch: right-click → Open. Allow "Screen Recording" for zones.',
   n3:'<b>Android:</b> download the .apk and open it. Allow installing from this source when asked.',
   foot:'For internal use. The operator makes the decision.',
   iosT:'Install on iPhone / iPad',iosP:'The app appears as a home-screen icon and works offline.',
@@ -199,8 +199,8 @@ const G={
        'Праворуч: які цілі показувати, режим <b>«Дрібна піхота»</b> (для зйомки з висоти) і <b>чутливість</b> — вище: знаходить більше, але й більше хибних.',
        '<b>Журнал</b> — усі виявлення з часом (кнопка CSV — в Excel). <b>Статистика</b> вгорі — 3 доби: підсумок, години активності, фото кожної цілі, кнопка <b>Звіт</b>.'],
   web:['Відкрийте посилання в <b>Chrome, Edge або Safari</b> і натисніть «Працювати в браузері».','Перше відкриття завантажує ШІ (≈45 МБ). Далі програма працює <b>без інтернету</b>.','Режим <b>Екран</b>: браузер покаже список — оберіть монітор або вікно пульта, з якого йде відео.'],
-  win:['Натисніть «Скачати для Windows» і запустіть файл <b>OKO-AI-Windows.exe</b>.','Якщо з\'явиться «Windows захистив ваш ПК» → <b>«Докладніше» → «Усе одно запустити»</b>.','Внизу екрана з\'явиться <b>панелька з червоним прицілом</b>. Потягніть приціл на вікно пульта й <b>відпустіть</b> (або клацніть по прицілу, потім по відео) — з\'явиться рамка, підправте її під картинку з дрона. Прицілів можна скільки завгодно.'],
-  mac:['Натисніть «Скачати для Mac», відкрийте <b>OKO-AI-Mac.dmg</b> і перетягніть ОКО-ШІ в «Програми».','Перший запуск: <b>правий клік → «Відкрити» → «Відкрити»</b>.','Для прицілу дозвольте <b>«Запис екрана»</b>: Системні параметри → Конфіденційність і безпека → Запис екрана → увімкнути ОКО-ШІ, потім перезапустіть програму.','Внизу екрана — <b>панелька з червоним прицілом</b>. Потягніть приціл на потрібне вікно або монітор і <b>відпустіть</b> (або клацніть приціл, потім — місце). ОКО-ШІ можна згорнути в Dock — тривога прийде на рамку.'],
+  win:['Натисніть «Скачати для Windows» і запустіть файл <b>OKO-AI-Windows.exe</b>.','Якщо з\'явиться «Windows захистив ваш ПК» → <b>«Докладніше» → «Усе одно запустити»</b>.','У правому нижньому куті з\'явиться смужка ОКО-ШІ. Натисніть <b>«Виділити зону»</b> й обведіть мишею ділянку з відео дрона (як для скриншота). Зона горить <b>зеленим</b>, а коли ШІ бачить піхоту чи дрон — <b>червоним</b>; у смужці з\'являються плашки «Екран 1», «Екран 2»… з хрестиком. Зон — до 10.'],
+  mac:['Натисніть «Скачати для Mac», відкрийте <b>OKO-AI-Mac.dmg</b> і перетягніть ОКО-ШІ в «Програми».','Перший запуск: <b>правий клік → «Відкрити» → «Відкрити»</b>.','Для зон дозвольте <b>«Запис екрана»</b>: у програмі з\'явиться кнопка «Дозволити запис екрана» → увімкніть OKO-AI у вікні macOS — програма перезапуститься сама.','У правому нижньому куті — смужка ОКО-ШІ. Натисніть <b>«Виділити зону»</b> й обведіть мишею ділянку з відео (як для скриншота). Зелена рамка — аналізує, <b>червона</b> — піхота чи дрон. Плашки «Екран 1», «Екран 2»… з хрестиком — у смужці. Камера: оберіть «Завжди дозволяти»; для зон дозвольте «Запис екрана» — кнопкою в самій програмі.'],
   and:['Натисніть «Скачати для Android» і відкрийте файл <b>oko-ai.apk</b> із «Завантажень».','Телефон попросить дозволити встановлення з цього джерела — <b>дозвольте</b> і натисніть «Встановити».','Працюють <b>Відеозапис</b> і <b>Камера</b>. Записи, знімки й звіти зберігаються через меню <b>«Поділитися»</b> (у Файли, Telegram тощо).'],
   ios:['Відкрийте це посилання саме в <b>Safari</b> і натисніть «Встановити на iPhone / iPad» → «Відкрити програму».','Натисніть <b>«Поділитися»</b> (квадрат зі стрілкою) → <b>«На екран „Додому“»</b> → «Додати».','З\'явиться іконка ОКО-ШІ — працює <b>без інтернету</b>. Доступні Відеозапис і Камера (сканувати екран iPhone не дозволяє).'],
   leg:[['ПІХОТА','#ff4b3e','червона рамка'],['ТЕХНІКА','#ffcf33','жовта рамка'],['ДРОН','#45f07a','зелена рамка, у т.ч. точка в небі'],['РУХ','#ff9a1f','тонка рамка: рух, тип не визначено']],
@@ -213,8 +213,8 @@ const G={
        'On the right: which targets to show, <b>Small infantry</b> mode (high altitude) and <b>sensitivity</b> — higher finds more but with more false alarms.',
        '<b>Log</b> — every detection with time (CSV for Excel). <b>Statistics</b> at the top — 3 days: summary, activity hours, a photo of every target, <b>Report</b> button.'],
   web:['Open the link in <b>Chrome, Edge or Safari</b> and press "Run in the browser".','The first launch downloads the AI (≈45 MB). After that it works <b>offline</b>.','<b>Screen</b> mode: the browser shows a list — pick the monitor or controller window with the drone video.'],
-  win:['Press "Download for Windows" and run <b>OKO-AI-Windows.exe</b>.','If you see "Windows protected your PC" → <b>"More info" → "Run anyway"</b>.','A <b>panel with a red crosshair</b> appears at the bottom of the screen. Drag the crosshair onto the controller window and <b>release</b> (or click it, then click the video) — a frame appears; adjust it to the drone picture. Add as many as you need.'],
-  mac:['Press "Download for Mac", open <b>OKO-AI-Mac.dmg</b> and drag OKO-AI to Applications.','First launch: <b>right-click → Open → Open</b>.','Allow <b>Screen Recording</b> for the crosshair: System Settings → Privacy & Security → Screen Recording → enable OKO-AI, then restart it.','A <b>crosshair panel</b> sits at the bottom of the screen. Drag the crosshair onto a window or monitor and <b>release</b> (or click it, then click the spot). Minimise OKO-AI to the Dock — alerts appear on the frame.'],
+  win:['Press "Download for Windows" and run <b>OKO-AI-Windows.exe</b>.','If you see "Windows protected your PC" → <b>"More info" → "Run anyway"</b>.','An OKO-AI strip appears at the bottom-right. Press <b>Select zone</b> and draw around the drone video (like a screenshot). The zone glows <b>green</b>, and <b>red</b> when the AI sees infantry or a drone; chips “Screen 1”, “Screen 2”… with × appear in the strip. Up to 10 zones.'],
+  mac:['Press "Download for Mac", open <b>OKO-AI-Mac.dmg</b> and drag OKO-AI to Applications.','First launch: <b>right-click → Open → Open</b>.','For zones allow <b>Screen Recording</b>: press “Allow screen recording” in the app → enable OKO-AI in the macOS window — the app restarts by itself.','An OKO-AI strip sits at the bottom-right. Press <b>Select zone</b> and draw around the video. Green frame — analysing, <b>red</b> — infantry or a drone. Camera: choose “Always allow”; for zones allow “Screen Recording” with the button in the app.'],
   and:['Press "Download for Android" and open <b>oko-ai.apk</b> from Downloads.','Allow installing from this source when asked and press "Install".','<b>Video file</b> and <b>Camera</b> work. Recordings, snapshots and reports are saved via the <b>Share</b> menu.'],
   ios:['Open this link in <b>Safari</b>, press "Install on iPhone / iPad" → "Open the app".','Tap <b>Share</b> → <b>"Add to Home Screen"</b> → "Add".','The OKO-AI icon appears and works <b>offline</b>. Video file and Camera are available (iPhone does not allow screen scanning).'],
   leg:[['INFANTRY','#ff4b3e','red box'],['VEHICLE','#ffcf33','yellow box'],['DRONE','#45f07a','green box, incl. a dot in the sky'],['MOTION','#ff9a1f','thin box: motion, type unknown']],

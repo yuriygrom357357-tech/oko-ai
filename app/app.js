@@ -360,10 +360,10 @@ function drawOverlay(src = tracks) {
 // ------------------------------------------------------------ дозволи (камера, екран) і вибір камери
 const PM = {
   uk: { camT: 'Немає доступу до камери', scrT: 'Потрібен дозвіл «Запис екрана»', nfT: 'Камеру не знайдено', busyT: 'Камера зайнята', pickT: 'Яку камеру використати?',
-    openCam: 'Відкрити налаштування камери', openScr: 'Відкрити налаштування', retry: 'Спробувати знову', allowCam: 'Дозволити камеру', allowScr: 'Дозволити запис екрана', waiting: 'Чекаю на ваше «Дозволити» у вікні macOS…', restart: 'Перезапустити ОКО-ШІ', close: 'Закрити', ok: 'Зрозуміло',
+    openCam: 'Відкрити налаштування камери', openScr: 'Відкрити налаштування', retry: 'Спробувати знову', allowCam: 'Дозволити камеру', allowScr: 'Дозволити запис екрана', askT: 'Дозволити ОКО-ШІ використовувати камеру?', askB: '<p>Камера або HDMI-грабер потрібні, щоб ШІ аналізував відео з пульта.</p>', always: 'Завжди дозволяти', once: 'Тільки зараз', never: 'Ніколи', neverT: 'Камеру вимкнено', neverB: '<p>Раніше ви обрали «Ніколи». Дозволити камеру зараз?</p>', setT: 'Увімкніть OKO-AI у налаштуваннях', setB: '<p>Я відкрив потрібний розділ налаштувань. Увімкніть перемикач навпроти <b>OKO-AI</b> — камера <b>запуститься сама</b>, повертатися й натискати нічого не треба.</p>', setW: 'Чекаю, поки ви увімкнете…', openAgain: 'Відкрити налаштування ще раз', waiting: 'Чекаю на ваше «Дозволити» у вікні macOS…', restart: 'Перезапустити ОКО-ШІ', close: 'Закрити', ok: 'Зрозуміло',
     macCam: '<p>Натисніть <b>«Дозволити камеру»</b> — з\'явиться вікно macOS. Натисніть у ньому <b>«Дозволити»</b>, і камера одразу запрацює.</p><p style="color:#8c9a88;font-size:13px">Якщо вікно не з\'явилося — «Відкрити налаштування камери» і увімкніть OKO-AI.</p>',
     winCam: '<p>Windows не дає програмам камеру.</p><ol><li>Натисніть <b>«Відкрити налаштування камери»</b>.</li><li>Увімкніть <b>«Доступ до камери»</b> і <b>«Дозволити класичним програмам доступ до камери»</b>.</li><li>Натисніть <b>«Спробувати знову»</b>.</li></ol>',
-    macScr: '<p>Щоб приціл бачив вікно пульта, потрібен дозвіл «Запис екрана». Натисніть <b>«Дозволити запис екрана»</b> і у вікні macOS увімкніть <b>OKO-AI</b> — ОКО-ШІ перезапуститься сама.</p><p style="color:#8c9a88;font-size:13px">Якщо вікно не з\'явилося — «Відкрити налаштування» і увімкніть OKO-AI.</p>',
+    macScr: '<p>Щоб зони бачили відео на екрані, потрібен дозвіл «Запис екрана». Натисніть <b>«Дозволити запис екрана»</b> і у вікні macOS увімкніть <b>OKO-AI</b> — ОКО-ШІ перезапуститься сама.</p><p style="color:#8c9a88;font-size:13px">Якщо вікно не з\'явилося — «Відкрити налаштування» і увімкніть OKO-AI.</p>',
     andApp: '<p>Дозвольте камеру для застосунку:</p><ol><li>Відкрийте <b>Налаштування → Додатки → ОКО-ШІ → Дозволи</b>.</li><li><b>Камера → Дозволити</b>.</li><li>Поверніться й натисніть <b>«Спробувати знову»</b>.</li></ol>',
     iosWeb: '<p>Safari заблокував камеру.</p><ol><li>Натисніть <b>«аА»</b> (або значок ліворуч в адресному рядку) → <b>Параметри вебсайту → Камера → Дозволити</b>.</li><li>Або: <b>Параметри iPhone → Safari → Камера → Дозволити</b>.</li><li>Натисніть <b>«Спробувати знову»</b>.</li></ol>',
     andWeb: '<p>Браузер заблокував камеру.</p><ol><li>Натисніть <b>значок замка</b> ліворуч в адресному рядку → <b>Дозволи → Камера → Дозволити</b>.</li><li>Натисніть <b>«Спробувати знову»</b>.</li></ol>',
@@ -372,10 +372,10 @@ const PM = {
     busy: '<p>Камеру зараз використовує інша програма (Zoom, FaceTime, OBS, Telegram…). Закрийте її й натисніть <b>«Спробувати знову»</b>.</p>',
     pick: 'Знайдено кілька камер. Для відео з пульта оберіть <b>HDMI-грабер</b> (часто називається «USB Video», «Capture», «HDMI»).' },
   en: { camT: 'No camera access', scrT: 'Screen Recording permission needed', nfT: 'No camera found', busyT: 'Camera is busy', pickT: 'Which camera to use?',
-    openCam: 'Open camera settings', openScr: 'Open settings', retry: 'Try again', allowCam: 'Allow camera', allowScr: 'Allow screen recording', waiting: 'Waiting for your “Allow” in the macOS window…', restart: 'Restart OKO-AI', close: 'Close', ok: 'OK',
+    openCam: 'Open camera settings', openScr: 'Open settings', retry: 'Try again', allowCam: 'Allow camera', allowScr: 'Allow screen recording', askT: 'Allow OKO-AI to use the camera?', askB: '<p>The camera or HDMI grabber lets the AI analyse the controller video.</p>', always: 'Always allow', once: 'Only this time', never: 'Never', neverT: 'Camera is off', neverB: '<p>You chose “Never” before. Allow the camera now?</p>', setT: 'Turn on OKO-AI in settings', setB: '<p>I opened the right settings page. Turn on <b>OKO-AI</b> — the camera <b>starts by itself</b>, no need to come back.</p>', setW: 'Waiting for you to turn it on…', openAgain: 'Open settings again', waiting: 'Waiting for your “Allow” in the macOS window…', restart: 'Restart OKO-AI', close: 'Close', ok: 'OK',
     macCam: '<p>Press <b>Allow camera</b> — a macOS window appears. Press <b>Allow</b> there and the camera starts.</p><p style="color:#8c9a88;font-size:13px">If no window appears — Open camera settings and enable OKO-AI.</p>',
     winCam: '<p>Windows blocks camera access.</p><ol><li>Press <b>Open camera settings</b>.</li><li>Turn on <b>Camera access</b> and <b>Let desktop apps access your camera</b>.</li><li>Press <b>Try again</b>.</li></ol>',
-    macScr: '<p>The crosshair needs "Screen Recording". Press <b>Allow screen recording</b> and enable <b>OKO-AI</b> in the macOS window — OKO-AI restarts by itself.</p><p style="color:#8c9a88;font-size:13px">If no window appears — Open settings and enable OKO-AI.</p>',
+    macScr: '<p>Zones need "Screen Recording". Press <b>Allow screen recording</b> and enable <b>OKO-AI</b> in the macOS window — OKO-AI restarts by itself.</p><p style="color:#8c9a88;font-size:13px">If no window appears — Open settings and enable OKO-AI.</p>',
     andApp: '<p>Allow the camera for the app:</p><ol><li>Open <b>Settings → Apps → OKO-AI → Permissions</b>.</li><li><b>Camera → Allow</b>.</li><li>Come back and press <b>Try again</b>.</li></ol>',
     iosWeb: '<p>Safari blocked the camera.</p><ol><li>Tap <b>aA</b> in the address bar → <b>Website Settings → Camera → Allow</b>.</li><li>Or: <b>Settings → Safari → Camera → Allow</b>.</li><li>Press <b>Try again</b>.</li></ol>',
     andWeb: '<p>The browser blocked the camera.</p><ol><li>Tap the <b>lock icon</b> in the address bar → <b>Permissions → Camera → Allow</b>.</li><li>Press <b>Try again</b>.</li></ol>',
@@ -410,6 +410,7 @@ function camHelp(errName) {
   if (errName === 'NotReadableError' || errName === 'TrackStartError' || errName === 'AbortError')
     return permDialog(pm('busyT'), pm('busy'), [[pm('retry'), retry, true], [pm('close'), closePerm]], ICO_CAM);
   const k = platformKind();
+  if ((k === 'mac' || k === 'win') && window.okoDesktop && okoDesktop.cameraStatus) return camAutoSettings();
   const html = { mac: pm('macCam'), win: pm('winCam'), andApp: pm('andApp'), iosApp: pm('iosWeb'), iosWeb: pm('iosWeb'), andWeb: pm('andWeb'), deskWeb: pm('deskWeb') }[k];
   const allowMac = async () => {
     $('pmBtns').querySelector('.pri').textContent = pm('waiting');
@@ -432,10 +433,33 @@ function pickCamera(cams, curId) {
     $('pmBody').querySelectorAll('.pm-cam').forEach(b => b.onclick = () => { closePerm(); res(b.dataset.id); });
   });
 }
+
+// згода на камеру (настільна програма): «Завжди / Тільки зараз / Ніколи». У браузері й на Android такий вибір показує сама система.
+function camConsent() {
+  return new Promise(res => {
+    if (!window.okoDesktop || S.camPolicy === 'always') return res(true);
+    const set = v => { S.camPolicy = v; save(); };
+    if (S.camPolicy === 'never') return permDialog(pm('neverT'), pm('neverB'), [[pm('always'), () => { set('always'); closePerm(); res(true); }, true], [pm('once'), () => { set(undefined); closePerm(); res(true); }], [pm('close'), () => { closePerm(); res(false); }]], ICO_CAM);
+    permDialog(pm('askT'), pm('askB'), [[pm('always'), () => { set('always'); closePerm(); res(true); }, true], [pm('once'), () => { closePerm(); res(true); }], [pm('never'), () => { set('never'); closePerm(); res(false); }]], '<svg viewBox="0 0 24 24"><rect x="3" y="7" width="13" height="10" rx="2"/><path d="M16 11l5-3v8l-5-3z"/></svg>');
+  });
+}
+// система заблокувала камеру → одразу відкриваємо потрібні налаштування і самі запускаємо камеру, щойно її дозволять
+let camWatch = null;
+function camAutoSettings() {
+  okoDesktop.openCameraSettings();
+  permDialog(pm('setT'), pm('setB') + `<p style="color:#9dbb63">⏳ ${pm('setW')}</p>`, [[pm('openAgain'), () => okoDesktop.openCameraSettings(), true], [pm('close'), () => { clearInterval(camWatch); closePerm(); }]], ICO_CAM);
+  clearInterval(camWatch); let n = 0;
+  camWatch = setInterval(async () => {
+    const st = await okoDesktop.cameraStatus();
+    if (st === 'granted') { clearInterval(camWatch); closePerm(); startSource('cam'); }
+    if (++n > 120 || $('perm').hidden) clearInterval(camWatch);
+  }, 1500);
+}
+
 async function openCamera() {
   if (window.okoDesktop && okoDesktop.cameraAccess) {
     const st = await okoDesktop.cameraAccess();
-    if (st !== 'granted') { const e = new Error('denied'); e.name = 'NotAllowedError'; throw e; }
+    if (st !== 'granted') { camAutoSettings(); return null; }
   }
   const cons = id => ({ video: Object.assign({ width: { ideal: 1920 }, height: { ideal: 1080 } }, id ? { deviceId: { exact: id } } : { facingMode: 'environment' }), audio: false });
   let st;
@@ -475,6 +499,9 @@ async function startSource(kind, payload, label) {
       stream.getVideoTracks()[0].addEventListener('ended', () => stopSource());
       video.removeAttribute('src'); video.srcObject = stream;
     } else if (kind === 'cam') {
+      show('loading', false);
+      if (!(await camConsent())) { srcKind = null; return; }
+      show('loading', true);
       stream = await openCamera();
       if (!stream) { show('loading', false); srcKind = null; return; }
       video.removeAttribute('src'); video.srcObject = stream;
@@ -691,11 +718,11 @@ $('help').onclick = e => { if (e.target.id === 'help') closeHelp(); };
 // перший запуск — показати довідку, доки людина її не закриє
 try { if (!localStorage.getItem('oko.helpSeen')) setTimeout(() => { if (!running && !localStorage.getItem('oko.helpSeen')) { renderHelp(); $('help').hidden = false; } }, 700); } catch (e) {}
 
-// ------------------------------------------------------------ НАСТІЛЬНА ВЕРСІЯ: прицілі
+// ------------------------------------------------------------ НАСТІЛЬНА ВЕРСІЯ: зони аналізу
 const DT = { list: [], streams: new Map(), active: null, busy: false };
 const DTX = {
-  uk: { aim: 'Приціл', aimS: 'тягніть на вікно пульта', add: '+ Приціл', name: n => `Приціл ${n}`, perm: 'Дозвольте ОКО-ШІ «Запис екрана» в Системних параметрах і перезапустіть програму', permBtn: 'Відкрити налаштування', hint: 'Внизу екрана є панелька з червоним прицілом. Потягніть приціл на вікно з відео дрона й відпустіть — або клацніть по ньому, а потім по відео. Рамку можна посунути за заголовок і змінити розмір за кут. Esc — скасувати.' },
-  en: { aim: 'Crosshair', aimS: 'drag onto the controller window', add: '+ Crosshair', name: n => `Crosshair ${n}`, perm: 'Allow OKO-AI "Screen Recording" in System Settings and restart the app', permBtn: 'Open settings', hint: 'There is a panel with a red crosshair at the bottom of the screen. Drag the crosshair onto the drone video window and release — or click it, then click the video. Move the frame by its title, resize by the corner. Esc cancels.' },
+  uk: { aim: 'Виділити зону', aimS: 'обвести ділянку відео на екрані', add: '＋ Зона', name: n => `Екран ${n}`, perm: 'Дозвольте ОКО-ШІ «Запис екрана» в Системних параметрах і перезапустіть програму', permBtn: 'Відкрити налаштування', hint: 'Натисніть «Виділити зону» (або «＋ Виділити зону» у смужці в правому нижньому кутку) й обведіть мишею ділянку з відео дрона. Зона горить зеленим, а коли ШІ бачить піхоту чи дрон — червоним. Зон може бути до 10.' },
+  en: { aim: 'Select zone', aimS: 'draw around the video on screen', add: '＋ Zone', name: n => `Screen ${n}`, perm: 'Allow OKO-AI "Screen Recording" in System Settings and restart the app', permBtn: 'Open settings', hint: 'Press "Select zone" (or "＋ Select zone" in the strip at the bottom-right) and draw around the drone video. The zone glows green, and red when the AI sees infantry or a drone. Up to 10 zones.' },
 };
 const dx = k => (DTX[S.lang] || DTX.uk)[k];
 function dtLang() {
@@ -722,11 +749,11 @@ async function displayStream(t) {
   const rec = { video: v, stream: st }; DT.streams.set(key, rec); return rec;
 }
 async function onTargets(list) {
-  // оновити список, зберігши треки існуючих прицілів
+  // оновити список, зберігши треки існуючих зон
   const old = new Map(DT.list.map(x => [x.id, x]));
   DT.list = list.map(t => Object.assign(old.get(t.id) || { tracks: [], prevGray: null, fresh: new Set() }, t));
   if (!DT.list.find(x => x.id === DT.active)) DT.active = DT.list.length ? DT.list[DT.list.length - 1].id : null;
-  // прибрати потоки моніторів, де вже немає прицілів
+  // прибрати потоки моніторів, де вже немає зон
   for (const [k, v] of DT.streams) if (!DT.list.some(x => String(x.displayId) === k)) { v.stream.getTracks().forEach(z => z.stop()); DT.streams.delete(k); }
   if (DT.list.length && srcKind !== 'targets') {
     if (running) stopSource(true);
@@ -779,7 +806,7 @@ async function analyseTargets() {
       if (cx > -20 && cy > -20 && cx < W + 20 && cy < H + 20) dets = dets.filter(d => !(cx > d.box[0] - 25 && cx < d.box[2] + 25 && cy > d.box[1] - 25 && cy < d.box[3] + 25 && (d.box[2] - d.box[0]) * (d.box[3] - d.box[1]) < 0.02 * W * H));
       x.cur = [cx, cy];
     } catch (e) {}
-    // свої треки й попередній кадр для кожного прицілу
+    // свої треки й попередній кадр для кожної зони
     tracks = x.tracks; prevGray = x.prevGray;
     const mots = motion(grab, W, H);
     const mots2 = x.cur ? mots.filter(m => !(m.box[0] - 30 < x.cur[0] && x.cur[0] < m.box[2] + 30 && m.box[1] - 30 < x.cur[1] && x.cur[1] < m.box[3] + 30)) : mots;
@@ -810,13 +837,13 @@ function renderTargets() {
 }
 if (window.okoDesktop) {
   document.body.classList.add('desktop');
-  // «Екран» → «Приціл»
+  // «Екран» → «Виділити зону»
   const b = $('btnScreen');
   if (b) {
-    b.querySelector('svg').outerHTML = '<svg viewBox="0 0 24 24" style="stroke:#ff4b3e;filter:drop-shadow(0 0 6px rgba(255,75,62,.5))"><circle cx="12" cy="12" r="7.5"/><circle cx="12" cy="12" r="1.3" fill="#ff4b3e"/><path d="M12 1.5v5M12 17.5v5M1.5 12h5M17.5 12h5"/></svg>';
+    b.querySelector('svg').outerHTML = '<svg viewBox="0 0 24 24" style="stroke:#45f07a;filter:drop-shadow(0 0 6px rgba(69,240,122,.5))"><rect x="3" y="5" width="18" height="14" rx="2" stroke-dasharray="3.2 2.4"/><path d="M8 12h8M12 8v8" stroke-dasharray="none"/></svg>';
     b.onclick = () => okoDesktop.addAim();
   }
-  // панель прицілів над відео
+  // плашки зон над відео
   const bar = document.createElement('div'); bar.id = 'tbar'; bar.className = 'tbar'; bar.hidden = true;
   bar.innerHTML = '<div class="tb-list"></div><button class="tb add" id="tbAdd"></button>';
   $('stage').appendChild(bar);
@@ -830,7 +857,7 @@ if (window.okoDesktop) {
   okoDesktop.onTargets(onTargets);
   okoDesktop.onFocusTarget(id => { DT.active = id; renderTbar(); });
   okoDesktop.targets().then(onTargets);
-  // «Стоп» прибирає всі прицілі
+  // «Стоп» прибирає всі зони
   const st = $('btnStop').onclick; $('btnStop').onclick = () => { if (srcKind === 'targets') DT.list.forEach(x => okoDesktop.removeTarget(x.id)); st(); };
   okoDesktop.setLang(S.lang); dtLang();
 }

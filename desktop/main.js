@@ -39,106 +39,99 @@ function createMain() {
   main.on('closed', () => { main = null; });
 }
 
-// ------------------------------------------------------------ панелька прицілу і розміщення
-// Панелька (завжди внизу екрана): червоний приціл + «ОКО-ШІ». Приціл не рухається сам —
-// за курсором їде його копія; рамка ставиться лише коли кнопку миші ВІДПУЩЕНО (або наступним клацанням).
-let pill = null, ghost = null, place = null; // place = { mode: 'drag'|'click', start, timer }
-function createPill() {
-  const d = screen.getPrimaryDisplay().workArea, W = 214, H = 64;
-  pill = new BrowserWindow({
-    width: W, height: H, x: Math.round(d.x + d.width / 2 - W / 2), y: Math.round(d.y + d.height - H - 14),
+// ------------------------------------------------------------ ЗОНИ: виділення прямокутником, смужка «Екран N» у кутку
+// Зона = ділянка екрана, яку ШІ аналізує. Рамка зелена (аналізує) / червона (піхота або дрон).
+const MAXZ = 10, BORDER = 3, TAB = 24;
+let strip = null, overlays = [];
+function createStrip() {
+  const d = screen.getPrimaryDisplay().workArea, W = 330, H = 58;
+  strip = new BrowserWindow({
+    width: W, height: H, x: d.x + d.width - W - 12, y: d.y + d.height - H - 12,
     frame: false, transparent: true, resizable: false, alwaysOnTop: true, skipTaskbar: true, hasShadow: false, show: false,
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true },
   });
-  pill.setAlwaysOnTop(true, 'floating');
-  pill.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
-  pill.setContentProtection(true);
-  pill.loadFile(path.join(__dirname, 'pill.html'), { query: { lang } });
-  pill.once('ready-to-show', () => pill.showInactive());
-  pill.on('closed', () => { pill = null; });
+  strip.setAlwaysOnTop(true, 'floating');
+  strip.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+  strip.setContentProtection(true);
+  strip.loadFile(path.join(__dirname, 'strip.html'), { query: { lang } });
+  strip.once('ready-to-show', () => { strip.showInactive(); sendStrip(); });
+  strip.on('closed', () => { strip = null; });
 }
-function ghostAt(p) { if (ghost && !ghost.isDestroyed()) ghost.setPosition(Math.round(p.x - 110), Math.round(p.y - 38)); }
-function startPlace(mode) {
-  cancelPlace();
-  const p = screen.getCursorScreenPoint();
-  ghost = new BrowserWindow({
-    width: 220, height: 102, x: Math.round(p.x - 110), y: Math.round(p.y - 38), frame: false, transparent: true, resizable: false,
-    alwaysOnTop: true, skipTaskbar: true, hasShadow: false, focusable: true, show: false,
-    webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true },
-  });
-  ghost.setAlwaysOnTop(true, 'screen-saver');
-  ghost.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
-  ghost.setContentProtection(true);
-  ghost.loadFile(path.join(__dirname, 'aim.html'), { query: { lang, mode } });
-  ghost.once('ready-to-show', () => ghost && ghost.showInactive());
-  place = { mode, start: p, timer: setInterval(() => ghostAt(screen.getCursorScreenPoint()), 16) };
-  try { globalShortcut.register('Escape', cancelPlace); } catch (e) {}
+function sendStrip() {
+  if (!strip || strip.isDestroyed()) return;
+  strip.webContents.send('zones', [...targets.values()].filter(t => !t.win.isDestroyed()).map(t => ({ id: t.id, n: t.n, alert: t.alert || 0, inf: t.st ? t.st.inf : 0, air: t.st ? t.st.air : 0 })), MAXZ);
 }
-function setPlaceMode(mode) { if (!place) return; place.mode = mode; if (ghost && !ghost.isDestroyed()) ghost.webContents.send('aim-mode', mode); }
-function cancelPlace() {
-  if (place) { clearInterval(place.timer); place = null; }
-  if (ghost && !ghost.isDestroyed()) ghost.close();
-  ghost = null;
+// виділення: напівпрозорий шар на кожному моніторі; тягнете прямокутник — відпустили — зона готова
+function startSelect() {
+  cancelSelect();
+  if (targets.size >= MAXZ) { new Notification({ title: 'ОКО-ШІ', body: T(`Максимум ${MAXZ} зон`, `Maximum ${MAXZ} zones`) }).show(); return; }
+  for (const d of screen.getAllDisplays()) {
+    const w = new BrowserWindow({
+      x: d.bounds.x, y: d.bounds.y, width: d.bounds.width, height: d.bounds.height, frame: false, transparent: true, resizable: false, movable: false,
+      alwaysOnTop: true, skipTaskbar: true, hasShadow: false, enableLargerThanScreen: true, show: false, focusable: true,
+      webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true },
+    });
+    w.setAlwaysOnTop(true, 'screen-saver');
+    w.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+    w.setContentProtection(true);
+    w.loadFile(path.join(__dirname, 'select.html'), { query: { lang, n: String(nextN), ox: String(d.bounds.x), oy: String(d.bounds.y) } });
+    w.once('ready-to-show', () => { w.show(); w.focus(); });
+    overlays.push(w);
+  }
+  try { globalShortcut.register('Escape', cancelSelect); } catch (e) {}
+}
+function cancelSelect() {
+  overlays.forEach(w => { if (!w.isDestroyed()) w.close(); }); overlays = [];
   try { globalShortcut.unregister('Escape'); } catch (e) {}
 }
-function dropPlace() {
-  if (!place) return;
-  const p = screen.getCursorScreenPoint();
-  cancelPlace();
-  createTarget({ x: p.x, y: p.y });
-}
-function addAim() { startPlace('click'); } // з меню / кнопки програми: приціл «прилипає» до курсора, клацніть — і він стає
-function createTarget(c, rect) {
-  const d = screen.getDisplayNearestPoint(c), wa = d.workArea;
-  const W = rect ? rect.width : Math.min(720, wa.width - 40), H = rect ? rect.height : Math.min(440, wa.height - 40);
-  const x = rect ? rect.x : Math.round(Math.max(wa.x, Math.min(wa.x + wa.width - W, c.x - W / 2)));
-  const y = rect ? rect.y : Math.round(Math.max(wa.y, Math.min(wa.y + wa.height - H, c.y - H / 2)));
+function createTarget(region) {
+  const r = { x: Math.round(region.x), y: Math.round(region.y), width: Math.max(80, Math.round(region.width)), height: Math.max(60, Math.round(region.height)) };
   const id = 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), n = nextN++;
   const win = new BrowserWindow({
-    x, y, width: W, height: H, frame: false, transparent: true, resizable: false, alwaysOnTop: true, skipTaskbar: true,
-    hasShadow: false, focusable: true, show: false, minWidth: 160, minHeight: 120,
-    webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true },
+    x: r.x - BORDER, y: r.y - TAB, width: r.width + 2 * BORDER, height: r.height + TAB + BORDER,
+    frame: false, transparent: true, resizable: false, alwaysOnTop: true, skipTaskbar: true, hasShadow: false, focusable: true, show: false,
+    enableLargerThanScreen: true, webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true },
   });
   win.setAlwaysOnTop(true, 'floating');
   win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
   win.setContentProtection(true);         // рамка не потрапляє в аналіз
-  if (process.platform !== 'linux') win.setIgnoreMouseEvents(true, { forward: true }); // кліки проходять крізь рамку до пульта
+  if (process.platform !== 'linux') win.setIgnoreMouseEvents(true, { forward: true }); // кліки проходять крізь зону до пульта
   win.loadFile(path.join(__dirname, 'frame.html'), { query: { id, n: String(n), lang } });
   win.once('ready-to-show', () => win.showInactive());
+  const d = screen.getDisplayMatching(r);
   const t = { id, n, win, displayId: d.id };
   targets.set(id, t);
-  const upd = () => { if (!win.isDestroyed()) { const nd = screen.getDisplayMatching(win.getBounds()); t.displayId = nd.id; sendTargets(); } };
+  const upd = () => { if (!win.isDestroyed()) { t.displayId = screen.getDisplayMatching(win.getBounds()).id; sendTargets(); } };
   win.on('moved', upd); win.on('resized', upd); win.on('move', () => { clearTimeout(win._u); win._u = setTimeout(upd, 150); });
   win.on('closed', () => { targets.delete(id); sendTargets(); updBadge(); });
   sendTargets();
-  if (main && main.isMinimized && !TEST) { /* лишаємо як є */ }
   return t;
 }
 function targetList() {
   return [...targets.values()].filter(t => !t.win.isDestroyed()).map(t => {
     const b = t.win.getContentBounds(), d = screen.getAllDisplays().find(x => x.id === t.displayId) || screen.getDisplayMatching(b);
-    // внутрішня частина рамки (без смуги заголовка 26 px і рамки 3 px)
     return { id: t.id, n: t.n, displayId: d.id, display: { x: d.bounds.x, y: d.bounds.y, width: d.bounds.width, height: d.bounds.height, scale: d.scaleFactor },
-      rect: { x: b.x + 3, y: b.y + 29, width: b.width - 6, height: b.height - 32 } };
+      rect: { x: b.x + BORDER, y: b.y + TAB, width: b.width - 2 * BORDER, height: b.height - TAB - BORDER } };
   });
 }
 function sendTargets() {
-  if (main && !main.isDestroyed()) { main.webContents.send('targets', targetList()); main.setContentProtection(targets.size > 0); } // поки є прицілі, вікно ОКО-ШІ не потрапляє в аналіз
-  updTray();
+  if (main && !main.isDestroyed()) { main.webContents.send('targets', targetList()); main.setContentProtection(targets.size > 0); } // поки є зони, вікно ОКО-ШІ не потрапляє в аналіз
+  sendStrip(); updTray();
 }
+function addAim() { startSelect(); }
 
 // ------------------------------------------------------------ тривоги
 const lastNote = new Map();
 function onStatus(id, st) {
   const t = targets.get(id); if (!t || t.win.isDestroyed()) return;
   t.win.webContents.send('status', st);
-  t.alert = st.inf + st.air;
-  updBadge();
+  t.alert = st.inf + st.air; t.st = st;
+  updBadge(); sendStrip();
   if (st.fresh && (st.fresh.inf || st.fresh.air) && Notification.isSupported()) {
     const k = Date.now(); if (k - (lastNote.get(id) || 0) > 12000) {
       lastNote.set(id, k);
       const parts = []; if (st.inf) parts.push(T(`піхота: ${st.inf}`, `infantry: ${st.inf}`)); if (st.air) parts.push(T(`дрони: ${st.air}`, `drones: ${st.air}`));
-      const nt = new Notification({ title: T(`ОКО-ШІ · Приціл ${t.n}`, `OKO-AI · Crosshair ${t.n}`), body: parts.join(', '), silent: false });
+      const nt = new Notification({ title: T(`ОКО-ШІ · Екран ${t.n}`, `OKO-AI · Screen ${t.n}`), body: parts.join(', '), silent: false });
       nt.on('click', () => showMain(id)); nt.show();
     }
   }
@@ -160,9 +153,9 @@ function showMain(focusId) {
 function trayMenu() {
   return Menu.buildFromTemplate([
     { label: T('Відкрити ОКО-ШІ', 'Open OKO-AI'), click: () => showMain() },
-    { label: T('Додати приціл', 'Add crosshair'), accelerator: 'CmdOrCtrl+Shift+A', click: () => addAim() },
-    { label: T('Панелька прицілу', 'Crosshair panel'), type: 'checkbox', checked: !!(pill && pill.isVisible()), click: () => { if (pill && pill.isVisible()) pill.hide(); else if (pill) pill.showInactive(); else createPill(); updTray(); } },
-    { label: T(`Прибрати прицілі (${targets.size})`, `Remove crosshairs (${targets.size})`), enabled: targets.size > 0, click: () => [...targets.values()].forEach(t => t.win.close()) },
+    { label: T('Виділити зону', 'Select zone'), accelerator: 'CmdOrCtrl+Shift+A', click: () => startSelect() },
+    { label: T('Смужка зон у кутку', 'Zone strip'), type: 'checkbox', checked: !!(strip && strip.isVisible()), click: () => { if (strip && strip.isVisible()) strip.hide(); else if (strip) strip.showInactive(); else createStrip(); updTray(); } },
+    { label: T(`Прибрати всі зони (${targets.size})`, `Remove all zones (${targets.size})`), enabled: targets.size > 0, click: () => [...targets.values()].forEach(t => t.win.close()) },
     { type: 'separator' },
     { label: T('Вийти', 'Quit'), click: () => { app.isQuitting = true; app.quit(); } },
   ]);
@@ -170,8 +163,8 @@ function trayMenu() {
 function updTray() {
   if (tray) tray.setContextMenu(trayMenu());
   if (process.platform === 'darwin' && app.dock) app.dock.setMenu(Menu.buildFromTemplate([
-    { label: T('Додати приціл', 'Add crosshair'), click: () => addAim() },
-    { label: T('Прибрати прицілі', 'Remove crosshairs'), enabled: targets.size > 0, click: () => [...targets.values()].forEach(t => t.win.close()) },
+    { label: T('Виділити зону', 'Select zone'), click: () => startSelect() },
+    { label: T('Прибрати всі зони', 'Remove all zones'), enabled: targets.size > 0, click: () => [...targets.values()].forEach(t => t.win.close()) },
   ]));
 }
 function createTray() {
@@ -184,15 +177,13 @@ function createTray() {
 }
 
 // ------------------------------------------------------------ IPC
-ipcMain.handle('add-aim', () => { if (main && !main.isDestroyed()) main.minimize(); setTimeout(() => addAim(), 250); return true; });
-ipcMain.on('pill-drag-start', () => startPlace('drag'));
-ipcMain.on('pill-drag-end', () => {
-  if (!place) return;
-  const p = screen.getCursorScreenPoint();
-  if (Math.hypot(p.x - place.start.x, p.y - place.start.y) < 10) setPlaceMode('click'); // просто клацнули — тепер клацніть, де поставити
-  else dropPlace();
-});
-ipcMain.on('ghost-click', () => dropPlace());
+ipcMain.handle('add-aim', () => { if (main && !main.isDestroyed()) main.minimize(); setTimeout(() => startSelect(), 300); return true; });
+ipcMain.on('select-zone', () => { if (main && !main.isDestroyed() && !main.isMinimized()) main.minimize(); setTimeout(() => startSelect(), 250); });
+ipcMain.on('select-done', (e, r) => { cancelSelect(); if (r && r.width > 30 && r.height > 30) createTarget(r); });
+ipcMain.on('select-cancel', () => cancelSelect());
+ipcMain.on('strip-remove', (e, id) => { const t = targets.get(id); if (t) t.win.close(); });
+ipcMain.on('strip-focus', (e, id) => showMain(id));
+ipcMain.on('strip-size', (e, w) => { if (!strip || strip.isDestroyed()) return; const b = strip.getBounds(), nw = Math.max(200, Math.min(1400, Math.round(w))); strip.setBounds({ x: b.x + b.width - nw, y: b.y, width: nw, height: b.height }); });
 ipcMain.on('open-main', () => showMain());
 ipcMain.handle('cursor', () => screen.getCursorScreenPoint());
 ipcMain.handle('targets', () => targetList());
@@ -209,6 +200,7 @@ ipcMain.handle('open-screen-settings', () => shell.openExternal('x-apple.systemp
 // Камера на Mac: якщо macOS «пам'ятає» стару відмову (часто після оновлення програми) — скидаємо її
 // і одразу показуємо системне вікно «Дозволити». Без походу в налаштування.
 async function askCamera(force) {
+  if (process.platform === 'win32') return systemPreferences.getMediaAccessStatus('camera');
   if (process.platform !== 'darwin') return 'granted';
   let st = systemPreferences.getMediaAccessStatus('camera');
   if (st === 'granted') return st;
@@ -218,6 +210,7 @@ async function askCamera(force) {
 }
 ipcMain.handle('camera-access', () => askCamera(false));
 ipcMain.handle('camera-allow', () => askCamera(true));
+ipcMain.handle('camera-status', () => (process.platform === 'linux' ? 'granted' : systemPreferences.getMediaAccessStatus('camera')));
 // Запис екрана (приціл): скинути стару відмову, викликати системне вікно, після «Дозволити» — перезапуск сам
 let screenWatch = null;
 ipcMain.handle('screen-allow', async () => {
@@ -243,7 +236,7 @@ ipcMain.handle('save', async (e, name, buf) => {
 });
 ipcMain.handle('reveal', (e, p) => shell.showItemInFolder(p));
 ipcMain.on('status', (e, id, st) => onStatus(id, st));
-ipcMain.on('lang', (e, l) => { lang = l === 'en' ? 'en' : 'uk'; updTray(); if (pill && !pill.isDestroyed()) pill.webContents.send('lang', lang); for (const t of targets.values()) if (!t.win.isDestroyed()) t.win.webContents.send('lang', lang); });
+ipcMain.on('lang', (e, l) => { lang = l === 'en' ? 'en' : 'uk'; updTray(); if (strip && !strip.isDestroyed()) strip.webContents.send('lang', lang); overlays.forEach(w => !w.isDestroyed() && w.webContents.send('lang', lang)); for (const t of targets.values()) if (!t.win.isDestroyed()) t.win.webContents.send('lang', lang); });
 // вікна рамки: керування мишею (кліки крізь рамку, крім заголовка й кута)
 ipcMain.on('frame-mouse', (e, solid) => { const w = BrowserWindow.fromWebContents(e.sender); if (w && process.platform !== 'linux') w.setIgnoreMouseEvents(!solid, { forward: true }); });
 ipcMain.on('frame-resize', (e, dw, dh, start) => {
@@ -256,8 +249,8 @@ ipcMain.on('frame-resize-end', e => { const w = BrowserWindow.fromWebContents(e.
 ipcMain.on('frame-close', e => { const w = BrowserWindow.fromWebContents(e.sender); if (w) w.close(); });
 ipcMain.on('frame-focus', (e, id) => showMain(id));
 // для автотесту
-ipcMain.handle('test-create-target', (e, r) => { const t = createTarget({ x: r.x + r.width / 2, y: r.y + r.height / 2 }, r); return t.id; });
-ipcMain.handle('test-place-state', () => (place ? place.mode : null));
+ipcMain.handle('test-create-target', (e, r) => createTarget(r).id);
+ipcMain.handle('test-overlays', () => overlays.filter(w => !w.isDestroyed()).length);
 ipcMain.handle('test-windows', () => BrowserWindow.getAllWindows().map(w => ({ id: w.id, title: w.getTitle(), bounds: w.getContentBounds(), url: w.webContents.getURL() })));
 
 // ------------------------------------------------------------ запуск
@@ -284,8 +277,8 @@ app.whenReady().then(() => {
   });
   createMain();
   createTray();
-  createPill();
-  globalShortcut.register('CmdOrCtrl+Shift+A', () => addAim());
+  createStrip();
+  globalShortcut.register('CmdOrCtrl+Shift+A', () => startSelect());
   app.on('activate', () => showMain());
 });
 app.on('before-quit', () => { app.isQuitting = true; });
