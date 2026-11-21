@@ -15,9 +15,11 @@ E=$(last OKO_EL); echo "::notice::Готовність: $(echo "$E" | cut -c1-30
 for i in $(seq 1 30); do sleep 3; ST=$(last OKO_STILL); [ -n "$ST" ] && break; done
 echo "::notice::ШІ на кадрі з піхотою: $ST"
 SZ=$(adb shell wm size | grep -o '[0-9]*x[0-9]*' | tail -1); W=${SZ%x*}; H=${SZ#*x}
-adb shell input tap $((W/2)) $((H/2)); sleep 2
-TC=$(last OKO_TOUCH); DPR=$(jq_ "$TC" "d['dpr']")
-OX=$(python3 -c "print(int($W/2 - $(jq_ "$TC" "d['x']")*$DPR))"); OY=$(python3 -c "print(int($H/2 - $(jq_ "$TC" "d['y']")*$DPR))")
+adb shell input keyevent 82; adb shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS >/dev/null 2>&1
+TC=""; for i in 1 2 3 4 5 6; do adb shell am start -n $PKG/.MainActivity >/dev/null 2>&1; sleep 1; adb shell input tap $((W/2)) $((H/2)); sleep 2; TC=$(last OKO_TOUCH); [ -n "$TC" ] && break; adb shell input keyevent 4; adb shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS >/dev/null 2>&1; sleep 2; done
+if [ -n "$TC" ]; then DPR=$(jq_ "$TC" "d['dpr']")
+  OX=$(python3 -c "print(int($W/2 - $(jq_ "$TC" "d['x']")*$DPR))"); OY=$(python3 -c "print(int($H/2 - $(jq_ "$TC" "d['y']")*$DPR))")
+else DEN=$(adb shell wm density | grep -o '[0-9]*' | tail -1); DPR=$(python3 -c "print(${DEN:-160}/160)"); OX=0; OY=$(python3 -c "print(int(24*$DPR))"); echo "::warning::Калібрування дотиком не вдалося, беру щільність екрана"; fi
 echo "::notice::Екран ${W}x${H}, dpr=$DPR, зсув WebView $OX,$OY"
 tap() { local E X Y i; for i in 1 2 3 4 5 6; do E=$(last OKO_EL); X=$(jq_ "$E" "d['el']['$1'][0]"); Y=$(jq_ "$E" "d['el']['$1'][1]"); [ -n "$X" ] && break; sleep 3; done
   [ -z "$X" ] && { echo "::error::Кнопку $1 не видно: $(echo "$E" | cut -c1-200)"; return 1; }
