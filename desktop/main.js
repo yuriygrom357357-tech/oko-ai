@@ -202,6 +202,15 @@ ipcMain.handle('screen-access', () => {
   return systemPreferences.getMediaAccessStatus('screen');
 });
 ipcMain.handle('open-screen-settings', () => shell.openExternal('x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture'));
+// камера: на Mac — системний запит дозволу; якщо заборонено — відкриваємо потрібний розділ налаштувань
+ipcMain.handle('camera-access', async () => {
+  if (process.platform !== 'darwin') return 'granted';
+  let st = systemPreferences.getMediaAccessStatus('camera');
+  if (st === 'not-determined') { const ok = await systemPreferences.askForMediaAccess('camera'); st = ok ? 'granted' : 'denied'; }
+  return st;
+});
+ipcMain.handle('open-camera-settings', () => shell.openExternal(process.platform === 'darwin' ? 'x-apple.systempreferences:com.apple.preference.security?Privacy_Camera' : 'ms-settings:privacy-webcam'));
+ipcMain.handle('relaunch', () => { app.relaunch(); app.isQuitting = true; app.exit(0); });
 ipcMain.handle('remove-target', (e, id) => { const t = targets.get(id); if (t) t.win.close(); });
 ipcMain.handle('save', async (e, name, buf) => {
   const dir = path.join(app.getPath('downloads'), 'OKO-AI');

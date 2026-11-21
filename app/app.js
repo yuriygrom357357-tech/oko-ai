@@ -356,6 +356,95 @@ function drawOverlay(src = tracks) {
   }
 }
 
+
+// ------------------------------------------------------------ дозволи (камера, екран) і вибір камери
+const PM = {
+  uk: { camT: 'Немає доступу до камери', scrT: 'Потрібен дозвіл «Запис екрана»', nfT: 'Камеру не знайдено', busyT: 'Камера зайнята', pickT: 'Яку камеру використати?',
+    openCam: 'Відкрити налаштування камери', openScr: 'Відкрити налаштування', retry: 'Спробувати знову', restart: 'Перезапустити ОКО-ШІ', close: 'Закрити', ok: 'Зрозуміло',
+    macCam: '<p>macOS не дає ОКО-ШІ камеру, поки ви не дозволите.</p><ol><li>Натисніть <b>«Відкрити налаштування камери»</b> — відкриється потрібний розділ.</li><li>Увімкніть перемикач навпроти <b>OKO-AI</b>.</li><li>Поверніться сюди й натисніть <b>«Спробувати знову»</b>.</li></ol>',
+    winCam: '<p>Windows не дає програмам камеру.</p><ol><li>Натисніть <b>«Відкрити налаштування камери»</b>.</li><li>Увімкніть <b>«Доступ до камери»</b> і <b>«Дозволити класичним програмам доступ до камери»</b>.</li><li>Натисніть <b>«Спробувати знову»</b>.</li></ol>',
+    macScr: '<p>Щоб приціл бачив вікно пульта, macOS має дозволити ОКО-ШІ «Запис екрана».</p><ol><li>Натисніть <b>«Відкрити налаштування»</b>.</li><li>Увімкніть перемикач навпроти <b>OKO-AI</b> (якщо його немає — натисніть «+» і оберіть OKO-AI у «Програмах»).</li><li>Натисніть <b>«Перезапустити ОКО-ШІ»</b> — macOS застосовує цей дозвіл лише після перезапуску.</li></ol>',
+    andApp: '<p>Дозвольте камеру для застосунку:</p><ol><li>Відкрийте <b>Налаштування → Додатки → ОКО-ШІ → Дозволи</b>.</li><li><b>Камера → Дозволити</b>.</li><li>Поверніться й натисніть <b>«Спробувати знову»</b>.</li></ol>',
+    iosWeb: '<p>Safari заблокував камеру.</p><ol><li>Натисніть <b>«аА»</b> (або значок ліворуч в адресному рядку) → <b>Параметри вебсайту → Камера → Дозволити</b>.</li><li>Або: <b>Параметри iPhone → Safari → Камера → Дозволити</b>.</li><li>Натисніть <b>«Спробувати знову»</b>.</li></ol>',
+    andWeb: '<p>Браузер заблокував камеру.</p><ol><li>Натисніть <b>значок замка</b> ліворуч в адресному рядку → <b>Дозволи → Камера → Дозволити</b>.</li><li>Натисніть <b>«Спробувати знову»</b>.</li></ol>',
+    deskWeb: '<p>Браузер заблокував камеру.</p><ol><li>Натисніть <b>значок камери або замка</b> в адресному рядку → <b>Камера → Дозволити</b>.</li><li>На Mac також: <b>Системні параметри → Конфіденційність і безпека → Камера</b> → увімкніть свій браузер.</li><li>Натисніть <b>«Спробувати знову»</b>.</li></ol>',
+    nf: '<p>Пристрій не бачить жодної камери.</p><ol><li>Підключіть <b>HDMI-грабер</b> або вебкамеру (для грабера — кабелем від пульта).</li><li>Зачекайте кілька секунд і натисніть <b>«Спробувати знову»</b>.</li></ol>',
+    busy: '<p>Камеру зараз використовує інша програма (Zoom, FaceTime, OBS, Telegram…). Закрийте її й натисніть <b>«Спробувати знову»</b>.</p>',
+    pick: 'Знайдено кілька камер. Для відео з пульта оберіть <b>HDMI-грабер</b> (часто називається «USB Video», «Capture», «HDMI»).' },
+  en: { camT: 'No camera access', scrT: 'Screen Recording permission needed', nfT: 'No camera found', busyT: 'Camera is busy', pickT: 'Which camera to use?',
+    openCam: 'Open camera settings', openScr: 'Open settings', retry: 'Try again', restart: 'Restart OKO-AI', close: 'Close', ok: 'OK',
+    macCam: '<p>macOS does not give OKO-AI the camera until you allow it.</p><ol><li>Press <b>Open camera settings</b>.</li><li>Turn on <b>OKO-AI</b>.</li><li>Come back and press <b>Try again</b>.</li></ol>',
+    winCam: '<p>Windows blocks camera access.</p><ol><li>Press <b>Open camera settings</b>.</li><li>Turn on <b>Camera access</b> and <b>Let desktop apps access your camera</b>.</li><li>Press <b>Try again</b>.</li></ol>',
+    macScr: '<p>For the crosshair to see the controller window, macOS must allow OKO-AI "Screen Recording".</p><ol><li>Press <b>Open settings</b>.</li><li>Turn on <b>OKO-AI</b> (if missing, press "+" and pick OKO-AI in Applications).</li><li>Press <b>Restart OKO-AI</b> — macOS applies it only after a restart.</li></ol>',
+    andApp: '<p>Allow the camera for the app:</p><ol><li>Open <b>Settings → Apps → OKO-AI → Permissions</b>.</li><li><b>Camera → Allow</b>.</li><li>Come back and press <b>Try again</b>.</li></ol>',
+    iosWeb: '<p>Safari blocked the camera.</p><ol><li>Tap <b>aA</b> in the address bar → <b>Website Settings → Camera → Allow</b>.</li><li>Or: <b>Settings → Safari → Camera → Allow</b>.</li><li>Press <b>Try again</b>.</li></ol>',
+    andWeb: '<p>The browser blocked the camera.</p><ol><li>Tap the <b>lock icon</b> in the address bar → <b>Permissions → Camera → Allow</b>.</li><li>Press <b>Try again</b>.</li></ol>',
+    deskWeb: '<p>The browser blocked the camera.</p><ol><li>Click the <b>camera or lock icon</b> in the address bar → <b>Camera → Allow</b>.</li><li>On Mac also: <b>System Settings → Privacy & Security → Camera</b> → enable your browser.</li><li>Press <b>Try again</b>.</li></ol>',
+    nf: '<p>No camera is connected.</p><ol><li>Connect an <b>HDMI grabber</b> or a webcam.</li><li>Wait a few seconds and press <b>Try again</b>.</li></ol>',
+    busy: '<p>Another app is using the camera (Zoom, FaceTime, OBS, Telegram…). Close it and press <b>Try again</b>.</p>',
+    pick: 'Several cameras found. For controller video choose the <b>HDMI grabber</b> (often "USB Video", "Capture", "HDMI").' },
+};
+const pm = k => (PM[S.lang] || PM.uk)[k];
+const ICO_CAM = '<svg viewBox="0 0 24 24"><rect x="3" y="7" width="13" height="10" rx="2"/><path d="M16 11l5-3v8l-5-3z"/><path d="M3 3l18 18"/></svg>';
+const ICO_SCR = '<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/><circle cx="12" cy="10" r="2.2"/></svg>';
+function permDialog(title, html, buttons, ico) {
+  $('pmTitle').textContent = title;
+  $('pmBody').innerHTML = (ico ? `<div class="pm-ico">${ico}</div>` : '') + html;
+  $('pmBtns').innerHTML = '';
+  buttons.forEach(([label, fn, pri]) => { const b = document.createElement('button'); b.className = 'pm-btn' + (pri ? ' pri' : ''); b.textContent = label; b.onclick = fn; $('pmBtns').appendChild(b); });
+  $('perm').hidden = false;
+}
+const closePerm = () => { $('perm').hidden = true; };
+$('pmClose').onclick = closePerm;
+$('perm').onclick = e => { if (e.target.id === 'perm') closePerm(); };
+function platformKind() {
+  const cap = window.Capacitor; if (cap && cap.isNativePlatform && cap.isNativePlatform()) return cap.getPlatform() === 'ios' ? 'iosApp' : 'andApp';
+  if (window.okoDesktop) return okoDesktop.platform === 'darwin' ? 'mac' : 'win';
+  const ua = navigator.userAgent; if (/iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)) return 'iosWeb';
+  return /Android/.test(ua) ? 'andWeb' : 'deskWeb';
+}
+function camHelp(errName) {
+  const retry = () => { closePerm(); startSource('cam'); };
+  if (errName === 'NotFoundError' || errName === 'DevicesNotFoundError' || errName === 'OverconstrainedError')
+    return permDialog(pm('nfT'), pm('nf'), [[pm('retry'), retry, true], [pm('close'), closePerm]], ICO_CAM);
+  if (errName === 'NotReadableError' || errName === 'TrackStartError' || errName === 'AbortError')
+    return permDialog(pm('busyT'), pm('busy'), [[pm('retry'), retry, true], [pm('close'), closePerm]], ICO_CAM);
+  const k = platformKind();
+  const html = { mac: pm('macCam'), win: pm('winCam'), andApp: pm('andApp'), iosApp: pm('iosWeb'), iosWeb: pm('iosWeb'), andWeb: pm('andWeb'), deskWeb: pm('deskWeb') }[k];
+  const btns = (k === 'mac' || k === 'win') ? [[pm('openCam'), () => okoDesktop.openCameraSettings(), true], [pm('retry'), retry]] : [[pm('retry'), retry, true], [pm('close'), closePerm]];
+  permDialog(pm('camT'), html, btns, ICO_CAM);
+}
+function screenHelp() {
+  if (!$('perm').hidden) return;
+  permDialog(pm('scrT'), pm('macScr'), [[pm('openScr'), () => okoDesktop.openScreenSettings(), true], [pm('restart'), () => okoDesktop.relaunch()]], ICO_SCR);
+}
+function pickCamera(cams, curId) {
+  return new Promise(res => {
+    permDialog(pm('pickT'), `<p>${pm('pick')}</p><div class="pm-cams">${cams.map((c, i) => `<button class="pm-cam${c.deviceId === curId ? ' cur' : ''}" data-id="${c.deviceId}"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="13" height="10" rx="2"/><path d="M16 11l5-3v8l-5-3z"/></svg>${(c.label || ('Камера ' + (i + 1))).replace(/[<>&]/g, '')}</button>`).join('')}</div>`, [[pm('close'), () => { closePerm(); res(null); }]]);
+    $('pmBody').querySelectorAll('.pm-cam').forEach(b => b.onclick = () => { closePerm(); res(b.dataset.id); });
+  });
+}
+async function openCamera() {
+  if (window.okoDesktop && okoDesktop.cameraAccess) {
+    const st = await okoDesktop.cameraAccess();
+    if (st !== 'granted') { const e = new Error('denied'); e.name = 'NotAllowedError'; throw e; }
+  }
+  const cons = id => ({ video: Object.assign({ width: { ideal: 1920 }, height: { ideal: 1080 } }, id ? { deviceId: { exact: id } } : { facingMode: 'environment' }), audio: false });
+  let st;
+  try { st = await navigator.mediaDevices.getUserMedia(cons(S.camId)); }
+  catch (e) { if (S.camId && (e.name === 'OverconstrainedError' || e.name === 'NotFoundError')) { S.camId = null; st = await navigator.mediaDevices.getUserMedia(cons(null)); } else throw e; }
+  const cams = (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === 'videoinput');
+  if (cams.length > 1) {
+    const cur = st.getVideoTracks()[0].getSettings().deviceId;
+    show('loading', false);
+    const pick = await pickCamera(cams, cur);
+    if (!pick) { st.getTracks().forEach(t => t.stop()); return null; }
+    if (pick !== cur) { st.getTracks().forEach(t => t.stop()); st = await navigator.mediaDevices.getUserMedia(cons(pick)); }
+    S.camId = pick; save(); show('loading', true);
+  }
+  return st;
+}
+
 // ------------------------------------------------------------ керування джерелом
 let srcLabel = '';
 let running = false, paused = false, srcKind = null, stream = null, aFps = 0, aBusy = false, lastA = 0;
@@ -378,7 +467,8 @@ async function startSource(kind, payload, label) {
       stream.getVideoTracks()[0].addEventListener('ended', () => stopSource());
       video.removeAttribute('src'); video.srcObject = stream;
     } else if (kind === 'cam') {
-      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false });
+      stream = await openCamera();
+      if (!stream) { show('loading', false); srcKind = null; return; }
       video.removeAttribute('src'); video.srcObject = stream;
     }
     await new Promise((res, rej) => { if (video.readyState >= 1) res(); else { video.onloadedmetadata = res; video.onerror = rej; } });
@@ -392,8 +482,8 @@ async function startSource(kind, payload, label) {
     requestAnimationFrame(render); analyse();
   } catch (e) {
     console.warn(e); show('loading', false);
-    if (kind === 'screen') toast(t('tNoScreen')); else if (kind === 'cam') toast(t('tNoCam')); else toast(String(e.message || e));
     stopSource();
+    if (kind === 'screen') toast(t('tNoScreen')); else if (kind === 'cam') camHelp(e && e.name); else toast(String(e.message || e));
   }
 }
 function stopSource(silent) {
@@ -548,6 +638,7 @@ $('langUk').onclick = () => { S.lang = 'uk'; save(); applyLang(); };
 $('langEn').onclick = () => { S.lang = 'en'; save(); applyLang(); };
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && !$('help').hidden) { closeHelp(); return; }
+  if (e.key === 'Escape' && !$('perm').hidden) { closePerm(); return; }
   if (!running || e.target.tagName === 'INPUT' || !$('stats').hidden) return;
   if (e.code === 'Space') { e.preventDefault(); $('btnPause').click(); }
   else if (e.key === 'r' || e.key === 'к') $('btnRec').click();
@@ -631,7 +722,7 @@ async function onTargets(list) {
   for (const [k, v] of DT.streams) if (!DT.list.some(x => String(x.displayId) === k)) { v.stream.getTracks().forEach(z => z.stop()); DT.streams.delete(k); }
   if (DT.list.length && srcKind !== 'targets') {
     if (running) stopSource(true);
-    if (window.okoDesktop.platform === 'darwin') { const a = await okoDesktop.screenAccess(); if (a === 'denied') { permBanner(true); } }
+    if (window.okoDesktop.platform === 'darwin') { const a = await okoDesktop.screenAccess(); if (a === 'denied' || a === 'restricted') screenHelp(); }
     show('loading', true);
     try { await loadModel(); } catch (e) { show('loading', false); return; }
     srcKind = 'targets'; running = true; paused = false; prevGray = null;
@@ -660,7 +751,7 @@ async function analyseTargets() {
   while (running && srcKind === 'targets') {
     if (paused || !DT.list.length) { await new Promise(r => setTimeout(r, 120)); continue; }
     const x = DT.list[i++ % DT.list.length];
-    let rec; try { rec = await displayStream(x); } catch (e) { console.warn(e); permBanner(true); await new Promise(r => setTimeout(r, 1500)); continue; }
+    let rec; try { rec = await displayStream(x); } catch (e) { console.warn(e); if (okoDesktop.platform === 'darwin') screenHelp(); else permBanner(true); await new Promise(r => setTimeout(r, 1500)); continue; }
     if (rec.video.readyState < 2) { await new Promise(r => setTimeout(r, 60)); continue; }
     const t0 = performance.now();
     const [sx, sy, sw, sh] = cropOf(x, rec);
@@ -668,7 +759,7 @@ async function analyseTargets() {
     grab.width = W; grab.height = H; gctx.drawImage(rec.video, sx, sy, sw, sh, 0, 0, W, H);
     if (!blackChecked) { // Mac без дозволу віддає порожній (чорний) кадр
       blackChecked = true; const d = gctx.getImageData(0, 0, Math.min(W, 64), Math.min(H, 64)).data; let m = 0; for (let j = 0; j < d.length; j += 4) m = Math.max(m, d[j], d[j + 1], d[j + 2]);
-      if (m < 3 && okoDesktop.platform === 'darwin') permBanner(true);
+      if (m < 3 && okoDesktop.platform === 'darwin') screenHelp();
     }
     x.W = W; x.H = H;
     const thr = Math.max(0.08, (60 - S.sens) / 100);
