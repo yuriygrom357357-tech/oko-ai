@@ -18,6 +18,8 @@ contextBridge.exposeInMainWorld('okoDesktop', {
   screenAccess: () => ipcRenderer.invoke('screen-access'),
   openScreenSettings: () => ipcRenderer.invoke('open-screen-settings'),
   cameraAccess: () => ipcRenderer.invoke('camera-access'),
+  cameraAllow: () => ipcRenderer.invoke('camera-allow'),
+  screenAllow: () => ipcRenderer.invoke('screen-allow'),
   openCameraSettings: () => ipcRenderer.invoke('open-camera-settings'),
   relaunch: () => ipcRenderer.invoke('relaunch'),
   removeTarget: id => ipcRenderer.invoke('remove-target', id),

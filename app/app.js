@@ -360,10 +360,10 @@ function drawOverlay(src = tracks) {
 // ------------------------------------------------------------ дозволи (камера, екран) і вибір камери
 const PM = {
   uk: { camT: 'Немає доступу до камери', scrT: 'Потрібен дозвіл «Запис екрана»', nfT: 'Камеру не знайдено', busyT: 'Камера зайнята', pickT: 'Яку камеру використати?',
-    openCam: 'Відкрити налаштування камери', openScr: 'Відкрити налаштування', retry: 'Спробувати знову', restart: 'Перезапустити ОКО-ШІ', close: 'Закрити', ok: 'Зрозуміло',
-    macCam: '<p>macOS не дає ОКО-ШІ камеру, поки ви не дозволите.</p><ol><li>Натисніть <b>«Відкрити налаштування камери»</b> — відкриється потрібний розділ.</li><li>Увімкніть перемикач навпроти <b>OKO-AI</b>.</li><li>Поверніться сюди й натисніть <b>«Спробувати знову»</b>.</li></ol>',
+    openCam: 'Відкрити налаштування камери', openScr: 'Відкрити налаштування', retry: 'Спробувати знову', allowCam: 'Дозволити камеру', allowScr: 'Дозволити запис екрана', waiting: 'Чекаю на ваше «Дозволити» у вікні macOS…', restart: 'Перезапустити ОКО-ШІ', close: 'Закрити', ok: 'Зрозуміло',
+    macCam: '<p>Натисніть <b>«Дозволити камеру»</b> — з\'явиться вікно macOS. Натисніть у ньому <b>«Дозволити»</b>, і камера одразу запрацює.</p><p style="color:#8c9a88;font-size:13px">Якщо вікно не з\'явилося — «Відкрити налаштування камери» і увімкніть OKO-AI.</p>',
     winCam: '<p>Windows не дає програмам камеру.</p><ol><li>Натисніть <b>«Відкрити налаштування камери»</b>.</li><li>Увімкніть <b>«Доступ до камери»</b> і <b>«Дозволити класичним програмам доступ до камери»</b>.</li><li>Натисніть <b>«Спробувати знову»</b>.</li></ol>',
-    macScr: '<p>Щоб приціл бачив вікно пульта, macOS має дозволити ОКО-ШІ «Запис екрана».</p><ol><li>Натисніть <b>«Відкрити налаштування»</b>.</li><li>Увімкніть перемикач навпроти <b>OKO-AI</b> (якщо його немає — натисніть «+» і оберіть OKO-AI у «Програмах»).</li><li>Натисніть <b>«Перезапустити ОКО-ШІ»</b> — macOS застосовує цей дозвіл лише після перезапуску.</li></ol>',
+    macScr: '<p>Щоб приціл бачив вікно пульта, потрібен дозвіл «Запис екрана». Натисніть <b>«Дозволити запис екрана»</b> і у вікні macOS увімкніть <b>OKO-AI</b> — ОКО-ШІ перезапуститься сама.</p><p style="color:#8c9a88;font-size:13px">Якщо вікно не з\'явилося — «Відкрити налаштування» і увімкніть OKO-AI.</p>',
     andApp: '<p>Дозвольте камеру для застосунку:</p><ol><li>Відкрийте <b>Налаштування → Додатки → ОКО-ШІ → Дозволи</b>.</li><li><b>Камера → Дозволити</b>.</li><li>Поверніться й натисніть <b>«Спробувати знову»</b>.</li></ol>',
     iosWeb: '<p>Safari заблокував камеру.</p><ol><li>Натисніть <b>«аА»</b> (або значок ліворуч в адресному рядку) → <b>Параметри вебсайту → Камера → Дозволити</b>.</li><li>Або: <b>Параметри iPhone → Safari → Камера → Дозволити</b>.</li><li>Натисніть <b>«Спробувати знову»</b>.</li></ol>',
     andWeb: '<p>Браузер заблокував камеру.</p><ol><li>Натисніть <b>значок замка</b> ліворуч в адресному рядку → <b>Дозволи → Камера → Дозволити</b>.</li><li>Натисніть <b>«Спробувати знову»</b>.</li></ol>',
@@ -372,10 +372,10 @@ const PM = {
     busy: '<p>Камеру зараз використовує інша програма (Zoom, FaceTime, OBS, Telegram…). Закрийте її й натисніть <b>«Спробувати знову»</b>.</p>',
     pick: 'Знайдено кілька камер. Для відео з пульта оберіть <b>HDMI-грабер</b> (часто називається «USB Video», «Capture», «HDMI»).' },
   en: { camT: 'No camera access', scrT: 'Screen Recording permission needed', nfT: 'No camera found', busyT: 'Camera is busy', pickT: 'Which camera to use?',
-    openCam: 'Open camera settings', openScr: 'Open settings', retry: 'Try again', restart: 'Restart OKO-AI', close: 'Close', ok: 'OK',
-    macCam: '<p>macOS does not give OKO-AI the camera until you allow it.</p><ol><li>Press <b>Open camera settings</b>.</li><li>Turn on <b>OKO-AI</b>.</li><li>Come back and press <b>Try again</b>.</li></ol>',
+    openCam: 'Open camera settings', openScr: 'Open settings', retry: 'Try again', allowCam: 'Allow camera', allowScr: 'Allow screen recording', waiting: 'Waiting for your “Allow” in the macOS window…', restart: 'Restart OKO-AI', close: 'Close', ok: 'OK',
+    macCam: '<p>Press <b>Allow camera</b> — a macOS window appears. Press <b>Allow</b> there and the camera starts.</p><p style="color:#8c9a88;font-size:13px">If no window appears — Open camera settings and enable OKO-AI.</p>',
     winCam: '<p>Windows blocks camera access.</p><ol><li>Press <b>Open camera settings</b>.</li><li>Turn on <b>Camera access</b> and <b>Let desktop apps access your camera</b>.</li><li>Press <b>Try again</b>.</li></ol>',
-    macScr: '<p>For the crosshair to see the controller window, macOS must allow OKO-AI "Screen Recording".</p><ol><li>Press <b>Open settings</b>.</li><li>Turn on <b>OKO-AI</b> (if missing, press "+" and pick OKO-AI in Applications).</li><li>Press <b>Restart OKO-AI</b> — macOS applies it only after a restart.</li></ol>',
+    macScr: '<p>The crosshair needs "Screen Recording". Press <b>Allow screen recording</b> and enable <b>OKO-AI</b> in the macOS window — OKO-AI restarts by itself.</p><p style="color:#8c9a88;font-size:13px">If no window appears — Open settings and enable OKO-AI.</p>',
     andApp: '<p>Allow the camera for the app:</p><ol><li>Open <b>Settings → Apps → OKO-AI → Permissions</b>.</li><li><b>Camera → Allow</b>.</li><li>Come back and press <b>Try again</b>.</li></ol>',
     iosWeb: '<p>Safari blocked the camera.</p><ol><li>Tap <b>aA</b> in the address bar → <b>Website Settings → Camera → Allow</b>.</li><li>Or: <b>Settings → Safari → Camera → Allow</b>.</li><li>Press <b>Try again</b>.</li></ol>',
     andWeb: '<p>The browser blocked the camera.</p><ol><li>Tap the <b>lock icon</b> in the address bar → <b>Permissions → Camera → Allow</b>.</li><li>Press <b>Try again</b>.</li></ol>',
@@ -411,12 +411,20 @@ function camHelp(errName) {
     return permDialog(pm('busyT'), pm('busy'), [[pm('retry'), retry, true], [pm('close'), closePerm]], ICO_CAM);
   const k = platformKind();
   const html = { mac: pm('macCam'), win: pm('winCam'), andApp: pm('andApp'), iosApp: pm('iosWeb'), iosWeb: pm('iosWeb'), andWeb: pm('andWeb'), deskWeb: pm('deskWeb') }[k];
-  const btns = (k === 'mac' || k === 'win') ? [[pm('openCam'), () => okoDesktop.openCameraSettings(), true], [pm('retry'), retry]] : [[pm('retry'), retry, true], [pm('close'), closePerm]];
+  const allowMac = async () => {
+    $('pmBtns').querySelector('.pri').textContent = pm('waiting');
+    const st = await okoDesktop.cameraAllow();
+    if (st === 'granted') { closePerm(); startSource('cam'); } else { $('pmBtns').querySelector('.pri').textContent = pm('allowCam'); }
+  };
+  const btns = k === 'mac' ? [[pm('allowCam'), allowMac, true], [pm('openCam'), () => okoDesktop.openCameraSettings()]]
+    : k === 'win' ? [[pm('openCam'), () => okoDesktop.openCameraSettings(), true], [pm('retry'), retry]]
+    : [[pm('allowCam'), retry, true], [pm('close'), closePerm]];
   permDialog(pm('camT'), html, btns, ICO_CAM);
 }
 function screenHelp() {
   if (!$('perm').hidden) return;
-  permDialog(pm('scrT'), pm('macScr'), [[pm('openScr'), () => okoDesktop.openScreenSettings(), true], [pm('restart'), () => okoDesktop.relaunch()]], ICO_SCR);
+  const allow = async () => { $('pmBtns').querySelector('.pri').textContent = pm('waiting'); await okoDesktop.screenAllow(); };
+  permDialog(pm('scrT'), pm('macScr'), [[pm('allowScr'), allow, true], [pm('openScr'), () => okoDesktop.openScreenSettings()], [pm('restart'), () => okoDesktop.relaunch()]], ICO_SCR);
 }
 function pickCamera(cams, curId) {
   return new Promise(res => {

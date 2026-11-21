@@ -7,6 +7,9 @@ const { app, BrowserWindow, ipcMain, screen, desktopCapturer, Tray, Menu, native
 const path = require('path');
 const fs = require('fs');
 const { pathToFileURL } = require('url');
+const { execFile } = require('child_process');
+const APP_ID = 'ua.okoai.desktop';
+const tccReset = svc => new Promise(r => execFile('/usr/bin/tccutil', ['reset', svc, APP_ID], () => r()));
 
 const WEB = path.join(__dirname, 'web');
 const TEST = process.env.OKO_TEST === '1';
@@ -203,11 +206,30 @@ ipcMain.handle('screen-access', () => {
 });
 ipcMain.handle('open-screen-settings', () => shell.openExternal('x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture'));
 // камера: на Mac — системний запит дозволу; якщо заборонено — відкриваємо потрібний розділ налаштувань
-ipcMain.handle('camera-access', async () => {
+// Камера на Mac: якщо macOS «пам'ятає» стару відмову (часто після оновлення програми) — скидаємо її
+// і одразу показуємо системне вікно «Дозволити». Без походу в налаштування.
+async function askCamera(force) {
   if (process.platform !== 'darwin') return 'granted';
   let st = systemPreferences.getMediaAccessStatus('camera');
-  if (st === 'not-determined') { const ok = await systemPreferences.askForMediaAccess('camera'); st = ok ? 'granted' : 'denied'; }
-  return st;
+  if (st === 'granted') return st;
+  if (st !== 'not-determined' || force) { await tccReset('Camera'); }
+  const ok = await systemPreferences.askForMediaAccess('camera');
+  return ok ? 'granted' : systemPreferences.getMediaAccessStatus('camera');
+}
+ipcMain.handle('camera-access', () => askCamera(false));
+ipcMain.handle('camera-allow', () => askCamera(true));
+// Запис екрана (приціл): скинути стару відмову, викликати системне вікно, після «Дозволити» — перезапуск сам
+let screenWatch = null;
+ipcMain.handle('screen-allow', async () => {
+  if (process.platform !== 'darwin') return 'granted';
+  await tccReset('ScreenCapture');
+  try { await desktopCapturer.getSources({ types: ['screen'], thumbnailSize: { width: 1, height: 1 } }); } catch (e) {}
+  clearInterval(screenWatch); let n = 0;
+  screenWatch = setInterval(() => {
+    if (systemPreferences.getMediaAccessStatus('screen') === 'granted') { clearInterval(screenWatch); app.relaunch(); app.isQuitting = true; app.exit(0); }
+    if (++n > 180) clearInterval(screenWatch);
+  }, 1000);
+  return systemPreferences.getMediaAccessStatus('screen');
 });
 ipcMain.handle('open-camera-settings', () => shell.openExternal(process.platform === 'darwin' ? 'x-apple.systempreferences:com.apple.preference.security?Privacy_Camera' : 'ms-settings:privacy-webcam'));
 ipcMain.handle('relaunch', () => { app.relaunch(); app.isQuitting = true; app.exit(0); });
