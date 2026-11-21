@@ -1,5 +1,5 @@
 /* Фоновий потік ШІ: модель працює тут, щоб інтерфейс не гальмував. */
-let session = null;
+let session = null, chain = Promise.resolve(); // запуски моделі строго по черзі
 self.onmessage = async (e) => {
   const m = e.data;
   try {
@@ -11,7 +11,9 @@ self.onmessage = async (e) => {
       session = await ort.InferenceSession.create(m.base + 'models/yolo11n.onnx', { executionProviders: [m.ep], graphOptimizationLevel: 'all' });
       self.postMessage({ type: 'ready', input: session.inputNames[0] });
     } else if (m.type === 'run') {
-      const out = await session.run({ [session.inputNames[0]]: new ort.Tensor('float32', m.data, [1, 3, m.size, m.size]) });
+      const job = chain.then(() => session.run({ [session.inputNames[0]]: new ort.Tensor('float32', m.data, [1, 3, m.size, m.size]) }));
+      chain = job.catch(() => {});
+      const out = await job;
       const o = out[session.outputNames[0]];
       const data = new Float32Array(o.data);
       self.postMessage({ type: 'out', id: m.id, data, dims: o.dims }, [data.buffer]);

@@ -397,7 +397,8 @@ async function analyse() {
     grab.width = W; grab.height = H; gctx.drawImage(video, 0, 0, W, H);
     const thr = Math.max(0.08, (60 - S.sens) / 100);           // чутливість 25% → поріг 0.35; 60% → 0.08; 10% → 0.5
     let dets;
-    try { dets = await detect(grab, W, H, thr, S.small); } catch (e) { console.error(e); setStatus('err', t('stErr')); await new Promise(r => setTimeout(r, 500)); continue; }
+    if (window.OKO_DIAG_ON && (++window.OKO_DIAG_N % 10 === 1)) { const d = gctx.getImageData(0, 0, W, H).data; let m = 0; for (let j = 0; j < d.length; j += 400) m += d[j]; window.OKO_DIAG = { bright: Math.round(m / (d.length / 400)), vw: video.videoWidth, rs: video.readyState, t: video.currentTime.toFixed(1) }; }
+    try { dets = await detect(grab, W, H, thr, S.small); if (window.OKO_DIAG) window.OKO_DIAG.raw = dets.length; } catch (e) { console.error(e); setStatus('err', t('stErr')); await new Promise(r => setTimeout(r, 500)); continue; }
     if (!running) break;
     const mots = motion(grab, W, H);
     for (const m of mots) {
@@ -729,11 +730,21 @@ fetch('autotest.json').then(r => r.ok ? r.json() : null).then(cfg => {
   const dpr = window.devicePixelRatio || 1;
   addEventListener('pointerdown', e => L('OKO_TOUCH', { x: e.clientX, y: e.clientY, dpr, t: e.target.id || e.target.className }), true);
   const ids = ['btnDemoInf', 'btnStop', 'btnStats', 'stClose', 'tgInf', 'langEn', 'langUk'];
+  window.OKO_DIAG_ON = true; window.OKO_DIAG_N = 0;
+  // перевірка ШІ на нерухомому кадрі (не залежить від відеодекодера пристрою)
+  const still = async () => {
+    try { await loadModel(); const im = new Image(); im.src = 'demo/infantry.jpg'; await im.decode();
+      const c = document.createElement('canvas'); c.width = im.naturalWidth; c.height = im.naturalHeight; c.getContext('2d').drawImage(im, 0, 0);
+      const t0 = performance.now(); const d = await detect(c, c.width, c.height, 0.35, false);
+      L('OKO_STILL', { n: d.length, inf: d.filter(x => x.cls === 'INF').length, ms: Math.round(performance.now() - t0) });
+    } catch (e) { L('OKO_STILL', { err: String(e) }); }
+  };
+  setTimeout(still, 1500);
   setInterval(() => {
     const el = {};
     for (const id of ids) { const e = $(id); if (!e) continue; const r = e.getBoundingClientRect(); if (r.width && r.height && e.offsetParent !== null) el[id] = [Math.round(r.left + r.width / 2), Math.round(r.top + r.height / 2)]; }
     L('OKO_EL', { dpr, w: innerWidth, h: innerHeight, el, ready: !!session, running, ep, ctl: $('controls').hidden, st: $('start').hidden, sy: Math.round(scrollY) });
-    if (running) L('OKO_RESULT', { inf: +$('cInf').textContent, veh: +$('cVeh').textContent, log: logRows.length, fps: aFps.toFixed(1), ep });
+    if (running) L('OKO_RESULT', { inf: +$('cInf').textContent, veh: +$('cVeh').textContent, log: logRows.length, fps: aFps.toFixed(1), ep, diag: window.OKO_DIAG || null });
     if (!$('stats').hidden) L('OKO_STATS', { photos: document.querySelectorAll('#stGallery .ph').length });
   }, 2000);
 }).catch(() => {});
