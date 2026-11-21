@@ -10,7 +10,7 @@
     "dist:win": "npm run web && electron-builder --win --x64 --publish never"
   },
   "keywords": [],
-  "author": "Юрій Мельничук (позивний «Композитор»)",
+  "author": "Юрій Мельничук, 158 навчальний центр (позивний «Композитор»)",
   "license": "ISC",
   "devDependencies": {
     "electron": "^45.4.1",
@@ -20,7 +20,7 @@
   "build": {
     "appId": "ua.okoai.desktop",
     "productName": "OKO-AI",
-    "copyright": "Юрій Мельничук, позивний «Композитор»",
+    "copyright": "Юрій Мельничук, 158 навчальний центр, позивний «Композитор»",
     "files": [
       "main.js",
       "preload.js",
