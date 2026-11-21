@@ -215,6 +215,7 @@ ipcMain.handle('camera-status', () => (process.platform === 'linux' ? 'granted' 
 let screenWatch = null;
 ipcMain.handle('screen-allow', async () => {
   if (process.platform !== 'darwin') return 'granted';
+  if (systemPreferences.getMediaAccessStatus('screen') === 'granted') return 'granted'; // вже дозволено — нічого не чіпаємо
   await tccReset('ScreenCapture');
   try { await desktopCapturer.getSources({ types: ['screen'], thumbnailSize: { width: 1, height: 1 } }); } catch (e) {}
   clearInterval(screenWatch); let n = 0;
@@ -222,6 +223,8 @@ ipcMain.handle('screen-allow', async () => {
     if (systemPreferences.getMediaAccessStatus('screen') === 'granted') { clearInterval(screenWatch); app.relaunch(); app.isQuitting = true; app.exit(0); }
     if (++n > 180) clearInterval(screenWatch);
   }, 1000);
+  // одразу відкриваємо потрібний розділ налаштувань, щоб не шукати
+  setTimeout(() => { if (systemPreferences.getMediaAccessStatus('screen') !== 'granted') shell.openExternal('x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture'); }, 1500);
   return systemPreferences.getMediaAccessStatus('screen');
 });
 ipcMain.handle('open-camera-settings', () => shell.openExternal(process.platform === 'darwin' ? 'x-apple.systempreferences:com.apple.preference.security?Privacy_Camera' : 'ms-settings:privacy-webcam'));
